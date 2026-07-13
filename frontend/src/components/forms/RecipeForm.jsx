@@ -7,6 +7,8 @@ const DIFFICULTY_OPTIONS = [
 ];
 
 const EMPTY_INGREDIENT = { ingredient_name: "", quantity: "", unit: "" };
+const INPUT_CLASS = "w-full px-3.5 py-3 rounded-xl border border-sand-200 text-[15px] outline-none focus:border-primary-500";
+const SMALL_INPUT_CLASS = "px-3 py-2.5 rounded-lg border border-sand-200 text-sm outline-none focus:border-primary-500";
 
 function buildInitialState(initialValues) {
   return {
@@ -68,13 +70,13 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <input
         type="text"
         placeholder="Título"
         value={formState.title}
         onChange={(event) => updateField("title", event.target.value)}
-        className="w-full px-4 py-2 border rounded"
+        className={INPUT_CLASS}
         required
       />
 
@@ -82,7 +84,7 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
         placeholder="Descripción (opcional)"
         value={formState.description}
         onChange={(event) => updateField("description", event.target.value)}
-        className="w-full px-4 py-2 border rounded"
+        className={INPUT_CLASS}
         rows={3}
       />
 
@@ -93,14 +95,14 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
           min="1"
           value={formState.time_min}
           onChange={(event) => updateField("time_min", event.target.value)}
-          className="w-full px-4 py-2 border rounded"
+          className={INPUT_CLASS}
           required
         />
 
         <select
           value={formState.difficulty}
           onChange={(event) => updateField("difficulty", event.target.value)}
-          className="w-full px-4 py-2 border rounded"
+          className={INPUT_CLASS}
         >
           {DIFFICULTY_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -113,7 +115,7 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
       <select
         value={formState.category_id}
         onChange={(event) => updateField("category_id", event.target.value)}
-        className="w-full px-4 py-2 border rounded"
+        className={INPUT_CLASS}
         required
       >
         <option value="" disabled>
@@ -127,8 +129,8 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
       </select>
 
       <div>
-        <h3 className="font-semibold mb-2">Ingredientes</h3>
-        <div className="space-y-2">
+        <h3 className="font-heading font-bold text-lg text-ink mb-2">Ingredientes</h3>
+        <div className="flex flex-col gap-2">
           {formState.ingredients.map((ingredient, index) => (
             <div key={index} className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-center gap-2">
               <input
@@ -136,7 +138,7 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
                 placeholder="Ingrediente"
                 value={ingredient.ingredient_name}
                 onChange={(event) => updateIngredient(index, "ingredient_name", event.target.value)}
-                className="px-3 py-2 border rounded"
+                className={SMALL_INPUT_CLASS}
                 required
               />
               <input
@@ -144,7 +146,7 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
                 placeholder="Cantidad"
                 value={ingredient.quantity}
                 onChange={(event) => updateIngredient(index, "quantity", event.target.value)}
-                className="px-3 py-2 border rounded"
+                className={SMALL_INPUT_CLASS}
                 required
               />
               <input
@@ -152,31 +154,31 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
                 placeholder="Unidad"
                 value={ingredient.unit}
                 onChange={(event) => updateIngredient(index, "unit", event.target.value)}
-                className="px-3 py-2 border rounded"
+                className={SMALL_INPUT_CLASS}
                 required
               />
               <button
                 type="button"
                 onClick={() => removeIngredientRow(index)}
                 disabled={formState.ingredients.length === 1}
-                className="text-sm text-red-600 disabled:opacity-30"
+                className="font-bold text-xs text-red-600 disabled:opacity-30"
               >
                 Quitar
               </button>
             </div>
           ))}
         </div>
-        <button type="button" onClick={addIngredientRow} className="mt-2 text-sm text-blue-600">
+        <button type="button" onClick={addIngredientRow} className="mt-2 font-bold text-sm text-primary-500">
           + Añadir ingrediente
         </button>
       </div>
 
-      {error && <div className="text-red-600">{error}</div>}
+      {error && <div className="text-red-600 text-sm font-semibold">{error}</div>}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+        className="w-full px-4 py-3.5 rounded-[14px] bg-primary-500 hover:bg-primary-600 text-white font-extrabold text-[15px] disabled:opacity-50"
       >
         {isSubmitting ? "Guardando..." : submitLabel}
       </button>

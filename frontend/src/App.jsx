@@ -15,7 +15,7 @@ import ShoppingListPage from "./pages/ShoppingListPage.jsx";
 function App() {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-white text-gray-900">
+      <div className="min-h-screen bg-cream text-gray-900">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />

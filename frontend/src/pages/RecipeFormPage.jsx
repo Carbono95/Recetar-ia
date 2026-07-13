@@ -53,19 +53,23 @@ function RecipeFormPage() {
     }
   };
 
-  if (isLoading) return <div className="p-6">Cargando...</div>;
+  if (isLoading) return <div className="p-6 text-sand-500">Cargando...</div>;
   if (error) return <div className="p-6 text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">{isEditing ? "Editar receta" : "Nueva receta"}</h1>
-      <RecipeForm
-        initialValues={initialValues}
-        categories={categories}
-        onSubmit={handleSubmit}
-        isSubmitting={isSubmitting}
-        submitLabel={isEditing ? "Guardar cambios" : "Crear receta"}
-      />
+    <div className="max-w-narrow mx-auto p-6">
+      <h1 className="font-heading font-extrabold text-2xl text-ink mb-5">
+        {isEditing ? "Editar receta" : "Nueva receta"}
+      </h1>
+      <div className="bg-white rounded-[18px] shadow-cardSm p-6">
+        <RecipeForm
+          initialValues={initialValues}
+          categories={categories}
+          onSubmit={handleSubmit}
+          isSubmitting={isSubmitting}
+          submitLabel={isEditing ? "Guardar cambios" : "Crear receta"}
+        />
+      </div>
     </div>
   );
 }
