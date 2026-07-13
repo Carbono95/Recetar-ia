@@ -1,20 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import Logo from "./Logo.jsx";
 
 const NAV_LINKS = [
-  {
-    to: "/recipes",
-    label: "Recetas",
-    match: (pathname, favoritesActive) => pathname.startsWith("/recipes") && !favoritesActive,
-  },
-  {
-    to: "/recipes?favorites=true",
-    label: "Favoritos",
-    match: (pathname, favoritesActive) => pathname.startsWith("/recipes") && favoritesActive,
-  },
+  { to: "/recipes", label: "Recetas", match: (pathname) => pathname.startsWith("/recipes") },
   { to: "/shopping", label: "Lista de compra", match: (pathname) => pathname.startsWith("/shopping") },
   { to: "/meal-plan", label: "Planner", match: (pathname) => pathname.startsWith("/meal-plan") },
 ];
@@ -22,11 +13,9 @@ const NAV_LINKS = [
 function Navbar() {
   const { logout } = useAuth();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenu = () => setIsOpen(false);
-  const favoritesActive = searchParams.get("favorites") === "true";
 
   const linkClass = (active) =>
     `font-bold text-[15px] ${active ? "text-primary-500" : "text-sand-600 hover:text-ink"}`;
@@ -40,7 +29,7 @@ function Navbar() {
 
         <div className="hidden md:flex items-center gap-7">
           {NAV_LINKS.map((link) => (
-            <Link key={link.to} to={link.to} className={linkClass(link.match(location.pathname, favoritesActive))}>
+            <Link key={link.to} to={link.to} className={linkClass(link.match(location.pathname))}>
               {link.label}
             </Link>
           ))}
@@ -76,7 +65,7 @@ function Navbar() {
               key={link.to}
               to={link.to}
               onClick={closeMenu}
-              className={`py-2.5 ${linkClass(link.match(location.pathname, favoritesActive))}`}
+              className={`py-2.5 ${linkClass(link.match(location.pathname))}`}
             >
               {link.label}
             </Link>
