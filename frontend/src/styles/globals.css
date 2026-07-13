@@ -3,9 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --color-primary: #f97316;
+  --color-primary: #16a34a;
 }
 
 body {
   font-family: "Inter", system-ui, sans-serif;
+}
+
+a {
+  color: #16a34a;
+}
+
+a:hover {
+  color: #f97316;
 }

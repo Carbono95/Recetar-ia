@@ -55,7 +55,7 @@ export function Logo({ size = 40, showTagline = false, variant = "light", classN
       <div className="flex flex-col leading-none">
         <span
           style={{ fontFamily: "'Baloo 2', sans-serif", color: wordmarkColor }}
-          className="font-extrabold text-2xl"
+          className="font-extrabold text-xl"
         >
           Recetar<span style={{ color: COLORS[variant].primary }}>IA</span>
         </span>

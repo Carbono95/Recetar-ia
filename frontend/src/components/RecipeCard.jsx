@@ -1,52 +1,45 @@
 import { Link } from "react-router-dom";
 
-import { useAuth } from "../hooks/useAuth";
+import { getPlaceholderColor, PlacePlateIcon } from "../utils/recipePlaceholder.jsx";
 
 const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil" };
 
-function RecipeCard({ recipe, onDelete, onToggleFavorite }) {
-  const { user } = useAuth();
+function RecipeCard({ recipe, onToggleFavorite }) {
   const imageUrl = recipe.image_path ? `${import.meta.env.VITE_API_URL}${recipe.image_path}` : null;
-  const canEdit = user && (user.id === recipe.user_id || user.role === "admin");
 
   return (
-    <div className="relative border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <button
-        onClick={() => onToggleFavorite(recipe.id, !recipe.is_favorite)}
-        aria-label={recipe.is_favorite ? "Quitar de favoritos" : "Marcar como favorita"}
-        className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center text-lg ${
-          recipe.is_favorite ? "bg-yellow-400 text-white" : "bg-white/80 text-gray-400"
-        }`}
+    <Link
+      to={`/recipes/${recipe.id}`}
+      className="block bg-white rounded-[18px] overflow-hidden shadow-cardSm hover:shadow-card transition-shadow"
+    >
+      <div
+        className="relative h-[140px] flex items-center justify-center"
+        style={{ background: imageUrl ? undefined : getPlaceholderColor(recipe.id) }}
       >
-        ★
-      </button>
-
-      <Link to={`/recipes/${recipe.id}`}>
-        <div className="h-40 bg-gray-100 flex items-center justify-center">
-          {imageUrl ? (
-            <img src={imageUrl} alt={recipe.title} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-gray-400 text-sm">Sin imagen</span>
-          )}
+        {imageUrl ? (
+          <img src={imageUrl} alt={recipe.title} className="w-full h-full object-cover" />
+        ) : (
+          <PlacePlateIcon size={44} />
+        )}
+        <button
+          onClick={(event) => {
+            event.preventDefault();
+            onToggleFavorite(recipe.id, !recipe.is_favorite);
+          }}
+          aria-label={recipe.is_favorite ? "Quitar de favoritos" : "Marcar como favorita"}
+          className="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-base"
+        >
+          {recipe.is_favorite ? "⭐" : "☆"}
+        </button>
+      </div>
+      <div className="p-3.5 flex flex-col gap-1.5">
+        <h3 className="font-extrabold text-[15px] text-ink">{recipe.title}</h3>
+        <div className="text-xs font-semibold text-sand-500 flex gap-2.5">
+          <span>⏱ {recipe.time_min} min</span>
+          <span>{DIFFICULTY_LABELS[recipe.difficulty]}</span>
         </div>
-        <div className="p-4">
-          <h3 className="font-semibold text-lg">{recipe.title}</h3>
-          <p className="text-sm text-gray-600 mt-1">
-            {recipe.time_min} min · {DIFFICULTY_LABELS[recipe.difficulty]}
-          </p>
-        </div>
-      </Link>
-      {canEdit && (
-        <div className="px-4 pb-4 flex gap-3">
-          <Link to={`/recipes/${recipe.id}/edit`} className="text-sm text-blue-600">
-            Editar
-          </Link>
-          <button onClick={() => onDelete(recipe.id)} className="text-sm text-red-600">
-            Eliminar
-          </button>
-        </div>
-      )}
-    </div>
+      </div>
+    </Link>
   );
 }
 

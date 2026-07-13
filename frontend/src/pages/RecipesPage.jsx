@@ -13,7 +13,7 @@ function RecipesPage() {
     favoritesOnly: searchParams.get("favorites") === "true" || undefined,
   });
 
-  const { recipes, isLoading, error, deleteRecipe, toggleFavorite } = useRecipes(filters);
+  const { recipes, isLoading, error, toggleFavorite } = useRecipes(filters);
 
   useEffect(() => {
     recipeService.listCategories().then(setCategories);
@@ -24,36 +24,32 @@ function RecipesPage() {
     setSearchParams(nextFilters.favoritesOnly ? { favorites: "true" } : {});
   };
 
-  const handleDelete = async (recipeId) => {
-    if (!window.confirm("¿Eliminar esta receta?")) return;
-    try {
-      await deleteRecipe(recipeId);
-    } catch (err) {
-      window.alert(err.message || "No se pudo eliminar la receta");
-    }
-  };
+  const pageTitle = filters.favoritesOnly ? "Favoritos" : "Recetario";
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Recetario</h1>
-        <Link to="/recipes/new" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-          Nueva receta
+    <div className="max-w-content mx-auto p-6">
+      <div className="flex items-center justify-between flex-wrap gap-3.5 mb-5">
+        <h1 className="font-heading font-extrabold text-2xl text-ink">{pageTitle}</h1>
+        <Link
+          to="/recipes/new"
+          className="px-[18px] py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm rounded-xl"
+        >
+          + Nueva receta
         </Link>
       </div>
 
       <SearchBar filters={filters} categories={categories} onChange={handleFiltersChange} />
 
-      {isLoading && <p>Cargando recetas...</p>}
+      {isLoading && <p className="text-sand-500">Cargando recetas...</p>}
       {error && <p className="text-red-600">{error}</p>}
 
       {!isLoading && !error && recipes.length === 0 && (
-        <p className="text-gray-500">No se encontraron recetas con estos filtros.</p>
+        <p className="text-center py-16 text-sand-400 font-semibold">No se encontraron recetas con estos filtros.</p>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
         {recipes.map((recipe) => (
-          <RecipeCard key={recipe.id} recipe={recipe} onDelete={handleDelete} onToggleFavorite={toggleFavorite} />
+          <RecipeCard key={recipe.id} recipe={recipe} onToggleFavorite={toggleFavorite} />
         ))}
       </div>
     </div>

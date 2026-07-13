@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import Logo from "../components/Logo.jsx";
+import { LogoIcon } from "../components/Logo.jsx";
 import { useAuth } from "../hooks/useAuth";
 
 function LoginPage() {
@@ -28,48 +28,61 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full">
-        <div className="flex justify-center mb-8">
-          <Logo size={64} showTagline />
+    <div className="min-h-screen flex items-center justify-center bg-cream px-5 py-8">
+      <div className="w-full max-w-[380px] flex flex-col items-center gap-6">
+        <LogoIcon size={88} />
+
+        <div className="text-center">
+          <div className="font-heading font-extrabold text-3xl text-ink">
+            Recetar<span className="text-primary-500">IA</span>
+          </div>
+          <div className="text-sm font-semibold text-sand-500 mt-1">tu chef con inteligencia artificial</div>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input
-            type="text"
-            placeholder="Usuario"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            className="w-full px-4 py-2 border rounded"
-            required
-          />
+        <div className="w-full bg-white rounded-[22px] p-6 shadow-card flex flex-col gap-3.5">
+          <form onSubmit={handleLogin} className="flex flex-col gap-3.5">
+            <div className="flex flex-col gap-1.5">
+              <label className="font-bold text-[13px] text-sand-600">Usuario</label>
+              <input
+                type="text"
+                placeholder="tu_usuario"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                className="px-3.5 py-3 rounded-xl border border-sand-200 text-[15px] outline-none focus:border-primary-500"
+                required
+              />
+            </div>
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            className="w-full px-4 py-2 border rounded"
-            required
-          />
+            <div className="flex flex-col gap-1.5">
+              <label className="font-bold text-[13px] text-sand-600">Contraseña</label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="px-3.5 py-3 rounded-xl border border-sand-200 text-[15px] outline-none focus:border-primary-500"
+                required
+              />
+            </div>
 
-          {error && <div className="text-red-600">{error}</div>}
+            {error && <div className="text-red-600 text-sm font-semibold">{error}</div>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isLoading ? "Iniciando sesión..." : "Login"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="mt-1.5 px-4 py-3.5 border-none rounded-[14px] bg-primary-500 hover:bg-primary-600 text-white font-extrabold text-[15px] disabled:opacity-50"
+            >
+              {isLoading ? "Iniciando sesión..." : "Entrar"}
+            </button>
+          </form>
+        </div>
 
-        <p className="mt-4 text-center">
+        <div className="text-sm text-sand-600">
           ¿No tienes cuenta?{" "}
-          <a href="/register" className="text-blue-600">
+          <a href="/register" className="font-bold">
             Regístrate
           </a>
-        </p>
+        </div>
       </div>
     </div>
   );

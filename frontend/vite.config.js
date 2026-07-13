@@ -12,7 +12,7 @@ export default defineConfig({
         name: "RecetarIA",
         short_name: "RecetarIA",
         description: "Tu chef con inteligencia artificial: recetas y lista de compra automática.",
-        theme_color: "#f97316",
+        theme_color: "#16a34a",
         background_color: "#ffffff",
         display: "standalone",
         start_url: "/",

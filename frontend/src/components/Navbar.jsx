@@ -1,50 +1,64 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 
 import { useAuth } from "../hooks/useAuth";
 import Logo from "./Logo.jsx";
 
 const NAV_LINKS = [
-  { to: "/recipes", label: "Recetas" },
-  { to: "/recipes?favorites=true", label: "Favoritos" },
-  { to: "/shopping", label: "Lista de compra" },
-  { to: "/meal-plan", label: "Planner" },
+  {
+    to: "/recipes",
+    label: "Recetas",
+    match: (pathname, favoritesActive) => pathname.startsWith("/recipes") && !favoritesActive,
+  },
+  {
+    to: "/recipes?favorites=true",
+    label: "Favoritos",
+    match: (pathname, favoritesActive) => pathname.startsWith("/recipes") && favoritesActive,
+  },
+  { to: "/shopping", label: "Lista de compra", match: (pathname) => pathname.startsWith("/shopping") },
+  { to: "/meal-plan", label: "Planner", match: (pathname) => pathname.startsWith("/meal-plan") },
 ];
 
 function Navbar() {
   const { logout } = useAuth();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenu = () => setIsOpen(false);
+  const favoritesActive = searchParams.get("favorites") === "true";
+
+  const linkClass = (active) =>
+    `font-bold text-[15px] ${active ? "text-primary-500" : "text-sand-600 hover:text-ink"}`;
 
   return (
-    <nav className="border-b bg-white">
-      <div className="flex items-center justify-between px-6 py-3">
-        <Link to="/recipes" onClick={closeMenu}>
-          <Logo size={32} />
+    <nav className="sticky top-0 z-20 border-b border-sand-100 bg-white">
+      <div className="max-w-content mx-auto flex items-center justify-between px-5 py-3.5">
+        <Link to="/recipes" onClick={closeMenu} className="flex items-center">
+          <Logo size={38} />
         </Link>
 
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-7">
           {NAV_LINKS.map((link) => (
-            <Link key={link.to} to={link.to} className="text-gray-600 hover:text-gray-900">
+            <Link key={link.to} to={link.to} className={linkClass(link.match(location.pathname, favoritesActive))}>
               {link.label}
             </Link>
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button onClick={logout} className="hidden md:block text-sm text-red-600">
+        <div className="flex items-center gap-3.5">
+          <button onClick={logout} className="hidden md:block text-sm font-bold text-red-600">
             Cerrar sesión
           </button>
           <button
             type="button"
-            className="md:hidden p-2 -mr-2"
+            className="md:hidden w-10 h-10 rounded-xl bg-cream text-ink flex items-center justify-center"
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
             aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
             onClick={() => setIsOpen((open) => !open)}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {isOpen ? (
                 <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
               ) : (
@@ -56,13 +70,13 @@ function Navbar() {
       </div>
 
       {isOpen && (
-        <div id="mobile-menu" className="md:hidden flex flex-col px-6 pb-3 border-t">
+        <div id="mobile-menu" className="md:hidden flex flex-col px-5 pb-3 border-t border-sand-100">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.to}
               to={link.to}
               onClick={closeMenu}
-              className="py-3 text-gray-600 hover:text-gray-900 border-b last:border-b-0"
+              className={`py-2.5 ${linkClass(link.match(location.pathname, favoritesActive))}`}
             >
               {link.label}
             </Link>
@@ -72,7 +86,7 @@ function Navbar() {
               closeMenu();
               logout();
             }}
-            className="py-3 text-left text-sm text-red-600"
+            className="py-2.5 text-left text-sm font-bold text-red-600"
           >
             Cerrar sesión
           </button>
