@@ -18,7 +18,7 @@ app = FastAPI(
 # En dev el frontend corre en un puerto distinto (Vite), CORS abierto solo si DEBUG
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"] if settings.debug else [],
+    allow_origins=["http://localhost:5173"] if settings.debug else settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

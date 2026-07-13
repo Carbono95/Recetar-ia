@@ -86,7 +86,7 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
         rows={3}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <input
           type="number"
           placeholder="Minutos"
@@ -130,7 +130,7 @@ function RecipeForm({ initialValues, categories, onSubmit, isSubmitting, submitL
         <h3 className="font-semibold mb-2">Ingredientes</h3>
         <div className="space-y-2">
           {formState.ingredients.map((ingredient, index) => (
-            <div key={index} className="grid grid-cols-[2fr_1fr_1fr_auto] gap-2">
+            <div key={index} className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_1fr_auto] sm:items-center gap-2">
               <input
                 type="text"
                 placeholder="Ingrediente"

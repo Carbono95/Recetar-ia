@@ -1,3 +1,5 @@
+# Solo Postgres para desarrollo local. Backend/frontend no están en este compose;
+# para el deploy en Render ver backend/Dockerfile y render.yaml.
 services:
   db:
     image: postgres:15

@@ -45,11 +45,12 @@ function ShoppingListPage() {
         )}
         <div className="space-y-1 mb-3">
           {recipes.map((recipe) => (
-            <label key={recipe.id} className="flex items-center gap-2">
+            <label key={recipe.id} className="flex items-center gap-3 py-1">
               <input
                 type="checkbox"
                 checked={selectedRecipeIds.includes(recipe.id)}
                 onChange={() => toggleRecipeSelection(recipe.id)}
+                className="w-5 h-5 shrink-0"
               />
               {recipe.title}
             </label>

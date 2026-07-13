@@ -305,53 +305,111 @@ Organizar recetas por día y tipo. Generar lista de compra semanal.
 
 ### FASE 6 — Responsive + Deploy (Semanas 10-11)
 
-**Status:** ⏳ Pending
+**Status:** 🟡 Código completo — deploy real pendiente (acción manual del usuario)
 
 **Descripción:**
-Hacer la app mobile-friendly y desplegar en producción.
+Hacer la app mobile-friendly y dejarla lista para desplegar en producción.
+Alcance decidido con el usuario: esta fase cubre solo preparación de código
+(responsive, PWA, Dockerfile, blueprints de deploy). El deploy real (crear
+cuentas, conectar repo, cargar secretos) queda documentado como guía manual
+al final de esta sección — ver "Guía de deploy manual" más abajo.
+
+**Bug crítico detectado y corregido antes de tocar nada más:** `backend/requirements.txt`
+instala `psycopg` v3, pero SQLAlchemy resuelve un `DATABASE_URL` con esquema
+`postgres://`/`postgresql://` al driver psycopg2 (no instalado) por defecto.
+Sin corregirlo, el backend habría roto en el primer arranque real contra
+Postgres en Render, con un traceback silencioso hasta ese momento porque dev
+usa SQLite. Se agregó normalización de esquema en `database.py`
+(`postgres://`/`postgresql://` → `postgresql+psycopg://`).
 
 **Frontend:**
-- [ ] Mobile-first design
-- [ ] Breakpoints: mobile (<640px), tablet (640-1024px), desktop (>1024px)
-- [ ] NavBar responsive (hamburger menu)
-- [ ] Todos los componentes responsivos
-- [ ] Touch-friendly (botones, inputs)
-- [ ] PWA básica (manifest.json, service worker)
-- [ ] Lighthouse score > 80
+- [x] Mobile-first design (patrón: stack por defecto, `sm:`/`md:` para grid/fila)
+- [x] Breakpoints: se usan los de Tailwind por defecto (sm=640/md=768/lg=1024),
+      ya coinciden con lo pedido; no hizo falta tocar `tailwind.config.js`
+- [x] NavBar responsive (hamburger menu) — reconstruido `Navbar.jsx` con panel
+      colapsable en mobile, sin librería de iconos ni Radix (consistente con
+      el resto del codebase)
+- [x] Componentes responsivos: `RecipeForm.jsx` (grids), `SearchBar.jsx`
+      (controles full-width en mobile), `RecipeDetailPage.jsx` (header apilable)
+- [x] Touch-friendly: checkboxes de `ShoppingListItem.jsx`/`ShoppingListPage.jsx`
+      a `w-5 h-5` con más padding vertical
+- [x] PWA básica (`vite-plugin-pwa`: manifest.webmanifest + service worker
+      autogenerados, iconos 192x192/512x512 rasterizados desde el `LogoIcon`
+      existente, `registerType: autoUpdate`, sin cache de respuestas de API)
+- [ ] Lighthouse score > 80 — no verificado en esta sesión (requiere build
+      desplegado o `vite preview`; queda para cuando haya URL real)
 
 **Backend:**
-- [ ] Dockerfile (para Render)
-- [ ] CORS configurado para Vercel domain
-- [ ] Migraciones a PostgreSQL en producción
-- [ ] Variables de entorno en Render
-- [ ] Health check endpoint
+- [x] Dockerfile (para Render) — `backend/Dockerfile`, Python 3.12-slim, uvicorn
+      con `$PORT` dinámico
+- [x] CORS configurado para dominio de Vercel — nuevo `cors_origins` (string
+      separado por coma) en `config.py`, usado en `main.py` cuando `DEBUG=False`
+- [x] Migraciones a PostgreSQL en producción — normalización de URL en
+      `database.py` (ver bug crítico arriba); las migraciones en sí se corren
+      manualmente tras el deploy (decisión confirmada, ver guía)
+- [x] Variables de entorno en Render — placeholders en `render.yaml`
+      (`SECRET_KEY`, `CORS_ORIGINS`, `OPENAI_API_KEY` como `sync: false`)
+- [x] Health check endpoint — ya existía (`GET /health`), reutilizado en
+      `render.yaml` (`healthCheckPath`)
 
-**Deployment:**
-- [ ] Setup Vercel (frontend)
-- [ ] Setup Render (backend + PostgreSQL)
-- [ ] Conectar ambos
-- [ ] SSL/HTTPS automático
-- [ ] CI/CD básico (auto-deploy en push)
+**Deployment (blueprints listos, ejecución manual pendiente):**
+- [x] `vercel.json` en la raíz (build del monorepo apuntando a `frontend/`)
+- [x] `render.yaml` en la raíz (web service Docker + `databases:` para
+      Postgres, provisionados juntos en un solo blueprint apply)
+- [ ] Setup Vercel (frontend) — pendiente, acción manual del usuario
+- [ ] Setup Render (backend + PostgreSQL) — pendiente, acción manual del usuario
+- [ ] Conectar ambos (actualizar `CORS_ORIGINS` con el dominio real de Vercel)
+- [ ] SSL/HTTPS automático — lo maneja Vercel/Render por defecto, sin config extra
+- [ ] CI/CD básico — fuera de alcance de esta fase (decisión confirmada)
 
 **Tests:**
-- [ ] Verificar responsiva en móvil
-- [ ] Verificar performance
-- [ ] Verificar que funciona en producción
+- [x] Verificar responsiva en móvil — Playwright headless a 375px: navbar
+      (hamburguesa/panel), RecipeForm, RecipeDetailPage, SearchBar; sin errores
+      de consola. Capturas revisadas visualmente.
+- [x] `pytest` backend: 50/50 en verde tras los cambios de `database.py`/`config.py`/`main.py`
+- [x] `npm run build`: compila limpio, genera `sw.js`, `manifest.webmanifest`
+      con los iconos correctos
+- [ ] Verificar performance (Lighthouse) — pendiente, ver nota arriba
+- [ ] Verificar que funciona en producción — pendiente hasta el deploy real
+- [ ] `docker build` del backend — Docker Desktop no estaba corriendo en esta
+      máquina; Dockerfile revisado línea por línea pero no probado con un build
+      real, queda pendiente para el primer deploy
 
 **Deliverables:**
-- ✅ App funciona perfectamente en móvil
-- ✅ Diseño responsive en todos los tamaños
-- ✅ Frontend deployado en Vercel
-- ✅ Backend deployado en Render
-- ✅ BD PostgreSQL en Render
-- ✅ App accesible en URL pública
-- ✅ Usuarios reales pueden usar
+- ✅ App responsive en mobile/tablet/desktop (verificado con capturas)
+- ✅ PWA instalable (manifest + service worker generados)
+- ✅ Código listo para deploy (Dockerfile, render.yaml, vercel.json)
+- ⏳ Frontend deployado en Vercel — pendiente (usuario)
+- ⏳ Backend deployado en Render — pendiente (usuario)
+- ⏳ BD PostgreSQL en Render — pendiente (usuario)
+- ⏳ App accesible en URL pública — pendiente (usuario)
 
 **Dependencias:** Fase 5 ✅
 
-**Próxima fase:** Tests + Pulir
+**Próxima fase:** Tests + Pulir (o completar el deploy manual primero)
 
 ---
+
+#### Guía de deploy manual (pendiente, a cargo del usuario)
+
+1. **Vercel (frontend):** crear proyecto nuevo apuntando al repo de GitHub.
+   `vercel.json` en la raíz ya define el build (`cd frontend && npm install &&
+   npm run build`) y el `outputDirectory` (`frontend/dist`) — no hace falta
+   tocar nada en el dashboard salvo confirmar el import del repo.
+2. **Render (backend + Postgres):** crear un Blueprint apuntando al repo;
+   `render.yaml` provisiona el web service (Docker, `backend/Dockerfile`) y la
+   base de datos Postgres juntos. Cargar manualmente en el dashboard los
+   `envVars` marcados `sync: false`: `SECRET_KEY` (generar uno nuevo, no
+   reusar el de dev) y `OPENAI_API_KEY` (vacío está bien por ahora).
+3. **Conectar ambos:** una vez Vercel asigne el dominio final, actualizar la
+   env var `CORS_ORIGINS` en Render con esa URL (separar por coma si hay
+   varias, p. ej. producción + preview).
+4. **Migraciones:** tras el primer deploy exitoso del backend, correr
+   `alembic upgrade head` manualmente desde el shell de Render (decisión
+   confirmada: no automatizado en el arranque del contenedor).
+5. **Verificar:** `GET /health` del backend debe responder `{"status":"ok"}`;
+   probar login/registro contra el dominio real de Vercel para confirmar que
+   el CORS quedó bien configurado.
 
 ### FASE 7 — Tests + Pulir (Semana 12)
 
@@ -440,7 +498,7 @@ Agregar sugerencias de recetas con OpenAI.
 | **3 — Compra** | 6 | ✅ Done | 10 | 🔴 Crítica |
 | **4 — Búsqueda** | 7 | ✅ Done | 13 | 🟡 Alta |
 | **5 — Planner** | 8-9 | ✅ Done | 13 | 🟡 Alta |
-| **6 — Deploy** | 10-11 | ⏳ Todo | 8 | 🟡 Alta |
+| **6 — Deploy** | 10-11 | 🟡 Código listo, deploy manual pendiente | 8 | 🟡 Alta |
 | **7 — Tests** | 12 | ⏳ Todo | 6 | 🟢 Media |
 | **v2 — IA** | +1-2 | 🔜 Planned | 5 | 🟢 Baja |
 
@@ -473,12 +531,14 @@ Fase 0 ✅
 - ✅ Planner Semanal (Fase 5): 100% (2/2 semanas)
 
 **En progreso:**
-- Ninguna fase activa actualmente
+- 🟡 Responsive + Deploy (Fase 6): código completo (responsive, PWA, Dockerfile,
+  render.yaml, vercel.json); falta la ejecución manual del deploy (cuentas
+  Vercel/Render) — ver guía en la sección de la Fase 6
 
 **Pendiente:**
-- ⏳ Deploy-IA: 0% (0/2 semanas)
+- ⏳ Deploy real (Vercel/Render) + Fase 7 (Tests) + v2 (IA)
 
-**Total completado:** 75% (9/12 semanas)
+**Total completado:** ~80% (código de 6/7 fases del MVP listo; falta ejecutar el deploy y la Fase 7)
 
 ---
 
