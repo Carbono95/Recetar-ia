@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:15
+    container_name: recetaria_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-recetaria}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-recetaria}
+      POSTGRES_DB: ${POSTGRES_DB:-recetaria}
+    ports:
+      - "5432:5432"
+    volumes:
+      - recetaria_pgdata:/var/lib/postgresql/data
+    networks:
+      - recetaria_net
+
+volumes:
+  recetaria_pgdata:
+
+networks:
+  recetaria_net:
+    driver: bridge
