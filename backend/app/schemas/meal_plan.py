@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-MealType = Literal["desayuno", "comida", "cena", "merienda"]
+MealType = Literal["comida", "cena"]
 
 
 class MealPlanCreate(BaseModel):

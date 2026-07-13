@@ -21,7 +21,7 @@
 - Generador automático de lista de compra (seleccionar recetas → ingredientes combinados)
 - Buscador de recetas (por nombre, categoría, dificultad, tiempo)
 - Sistema de favoritos (many-to-many)
-- Planner semanal (organizar recetas por día/tipo: desayuno, comida, cena)
+- Planner semanal (organizar recetas por día/tipo: comida, cena)
 - Subida de imágenes de recetas
 - Interfaz responsive (móvil, tablet, desktop)
 - PWA básica (instalable)
@@ -250,7 +250,7 @@ id              SERIAL PRIMARY KEY
 user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 recipe_id       INTEGER NOT NULL REFERENCES recipes(id)
 date            DATE NOT NULL
-meal_type       ENUM('desayuno', 'comida', 'cena', 'merienda')
+meal_type       ENUM('comida', 'cena')
 created_at      TIMESTAMP DEFAULT now()
 ```
 
@@ -325,7 +325,7 @@ Frontend → Muestra lista con checkboxes
 ```
 User → Navega a /meal-plan
   → Ve calendario lunes-domingo
-  → Para cada día: desayuno, comida, cena
+  → Para cada día: comida, cena
   → Selecciona recetas
 
 Frontend → POST /api/v1/meal-plan { recipe_id, date, meal_type }

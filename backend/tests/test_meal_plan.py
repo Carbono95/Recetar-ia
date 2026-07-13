@@ -76,7 +76,7 @@ def test_get_week_entries_only_returns_that_week(client, auth_headers, category)
 
     client.post(
         "/api/v1/meal-plan",
-        json={"recipe_id": recipe_id, "date": str(THIS_MONDAY), "meal_type": "desayuno"},
+        json={"recipe_id": recipe_id, "date": str(THIS_MONDAY), "meal_type": "comida"},
         headers=headers,
     )
     previous_week_day = THIS_MONDAY - timedelta(days=7)
@@ -103,7 +103,7 @@ def test_remove_meal_plan_entry(client, auth_headers, category):
     recipe_id = create_recipe(client, headers, category.id)
     created = client.post(
         "/api/v1/meal-plan",
-        json={"recipe_id": recipe_id, "date": str(THIS_MONDAY), "meal_type": "merienda"},
+        json={"recipe_id": recipe_id, "date": str(THIS_MONDAY), "meal_type": "cena"},
         headers=headers,
     )
     entry_id = created.json()["id"]
@@ -140,7 +140,7 @@ def test_generate_weekly_shopping_list_sums_repeated_recipe(client, auth_headers
 
     client.post(
         "/api/v1/meal-plan",
-        json={"recipe_id": recipe_id, "date": str(THIS_MONDAY), "meal_type": "desayuno"},
+        json={"recipe_id": recipe_id, "date": str(THIS_MONDAY), "meal_type": "comida"},
         headers=headers,
     )
     client.post(

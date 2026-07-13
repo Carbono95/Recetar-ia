@@ -1,7 +1,5 @@
 const MEAL_TYPES = [
-  { value: "desayuno", label: "Desayuno" },
   { value: "comida", label: "Comida" },
-  { value: "merienda", label: "Merienda" },
   { value: "cena", label: "Cena" },
 ];
 

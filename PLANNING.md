@@ -291,11 +291,20 @@ Organizar recetas por día y tipo. Generar lista de compra semanal.
 
 **Deliverables:**
 - ✅ Vista de semana (lunes-domingo)
-- ✅ 4 tipos de comida por día (desayuno, comida, merienda, cena)
+- ✅ 4 tipos de comida por día (desayuno, comida, merienda, cena) — **actualizado
+  posteriormente** (ver nota abajo): se redujo a 2 (comida, cena)
 - ✅ Agregar receta a día/tipo
 - ✅ Remover comida de planner
 - ✅ Generar lista compra semanal
 - ✅ Deduplicación funciona con múltiples días (verificado con servidor real: misma receta lunes+miércoles → cantidad x2)
+
+**Actualización posterior (julio 2026):** se decidió limitar el planner a solo
+2 tipos de comida por día (`comida`, `cena`), quitando `desayuno` y
+`merienda`. Cambio en `backend/app/schemas/meal_plan.py` (`MealType` Literal),
+`backend/app/models/meal_plan.py` (comentario), y
+`frontend/src/components/MealPlanDay.jsx` (`MEAL_TYPES`). Sin migración de BD
+necesaria (`meal_type` es `String(20)` sin CHECK constraint a nivel de
+Postgres/SQLite). `CLAUDE.md` actualizado para reflejar el nuevo schema.
 
 **Dependencias:** Fase 3 ✅, Fase 4 ✅
 

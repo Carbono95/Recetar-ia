@@ -14,7 +14,7 @@ class MealPlan(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     recipe_id: Mapped[int] = mapped_column(ForeignKey("recipes.id", ondelete="CASCADE"), nullable=False)
     date: Mapped[date_type] = mapped_column(Date, nullable=False)
-    meal_type: Mapped[str] = mapped_column(String(20), nullable=False)  # desayuno|comida|cena|merienda
+    meal_type: Mapped[str] = mapped_column(String(20), nullable=False)  # comida|cena
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     recipe: Mapped[Recipe] = relationship(lazy="joined")
