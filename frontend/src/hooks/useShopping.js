@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { notify } from "../services/notify";
 import shoppingService from "../services/shoppingService";
 
 export function useShopping() {
@@ -44,7 +45,7 @@ export function useShopping() {
       await shoppingService.checkItem(itemId, checked);
     } catch (err) {
       setItems(previousItems);
-      window.alert(err.message || "No se pudo actualizar el ingrediente");
+      notify(err.message || "No se pudo actualizar el ingrediente");
     }
   };
 

@@ -1,6 +1,7 @@
 import { createContext, useEffect, useState } from "react";
 
 import authService from "../services/authService";
+import { webStorage } from "../services/webStorage";
 
 export const AuthContext = createContext(null);
 
@@ -11,7 +12,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function loadCurrentUser() {
-      if (!localStorage.getItem("access_token")) {
+      if (!(await webStorage.getItem("access_token"))) {
         setIsLoading(false);
         return;
       }
@@ -30,8 +31,8 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => {
     const tokens = await authService.login(username, password);
-    localStorage.setItem("access_token", tokens.access_token);
-    localStorage.setItem("refresh_token", tokens.refresh_token);
+    await webStorage.setItem("access_token", tokens.access_token);
+    await webStorage.setItem("refresh_token", tokens.refresh_token);
     const profile = await authService.me();
     setUser(profile);
     setIsAuthenticated(true);
@@ -41,9 +42,9 @@ export function AuthProvider({ children }) {
     await authService.register(username, password);
   };
 
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+  const logout = async () => {
+    await webStorage.removeItem("access_token");
+    await webStorage.removeItem("refresh_token");
     setUser(null);
     setIsAuthenticated(false);
   };

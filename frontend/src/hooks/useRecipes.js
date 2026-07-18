@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import { notify } from "../services/notify";
 import recipeService from "../services/recipeService";
 
 export function useRecipes(filters = {}) {
@@ -43,7 +44,7 @@ export function useRecipes(filters = {}) {
       }
     } catch (err) {
       setRecipes(previousRecipes);
-      window.alert(err.message || "No se pudo actualizar el favorito");
+      notify(err.message || "No se pudo actualizar el favorito");
     }
   };
 
