@@ -15,10 +15,13 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# En dev el frontend corre en un puerto distinto (Vite), CORS abierto solo si DEBUG
+# En dev el frontend (Vite) y las pruebas desde navegador del móvil (Expo Web, IP de la LAN)
+# llaman desde orígenes distintos. CORS solo lo aplican navegadores —la app nativa de React
+# Native no lo exige—, pero el regex cubre el caso dev-web sin abrir nada en producción.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"] if settings.debug else settings.cors_origins_list,
+    allow_origin_regex=r"http://192\.168\.\d+\.\d+(:\d+)?" if settings.debug else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
