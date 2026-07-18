@@ -5,7 +5,7 @@ const MEAL_TYPES = [
 
 function MealPlanDay({ date, dayLabel, entriesForDay, recipes, onAdd, onRemove }) {
   return (
-    <div className="bg-white rounded-[14px] shadow-cardSm p-3.5">
+    <div className="bg-white rounded-[18px] shadow-ios p-3.5">
       <h3 className="font-heading font-bold text-sm text-ink mb-2 capitalize">{dayLabel}</h3>
       <div className="flex flex-col gap-3">
         {MEAL_TYPES.map((mealType) => {

@@ -57,11 +57,11 @@ function RecipeFormPage() {
   if (error) return <div className="p-6 text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-narrow mx-auto p-6">
-      <h1 className="font-heading font-extrabold text-2xl text-ink mb-5">
+    <div className="max-w-narrow mx-auto px-5 md:px-6 pt-3 md:pt-6 pb-6">
+      <h1 className="font-heading font-extrabold text-[32px] md:text-[34px] text-ink mb-5">
         {isEditing ? "Editar receta" : "Nueva receta"}
       </h1>
-      <div className="bg-white rounded-[18px] shadow-cardSm p-6">
+      <div className="bg-white rounded-[22px] shadow-ios p-6">
         <RecipeForm
           initialValues={initialValues}
           categories={categories}

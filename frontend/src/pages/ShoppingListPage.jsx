@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import ShoppingListItem from "../components/ShoppingListItem.jsx";
 import { useShopping } from "../hooks/useShopping.js";
 import recipeService from "../services/recipeService";
 
 function ShoppingListPage() {
+  const [searchParams] = useSearchParams();
+  const addId = searchParams.get("add");
   const [recipes, setRecipes] = useState([]);
-  const [selectedRecipeIds, setSelectedRecipeIds] = useState([]);
+  // Preselección al llegar desde el detalle de una receta (?add=<id>)
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState(addId ? [Number(addId)] : []);
   const [isLoadingRecipes, setIsLoadingRecipes] = useState(true);
   const { items, isLoading, error, generateList, toggleChecked, clearList } = useShopping();
 
@@ -34,10 +38,10 @@ function ShoppingListPage() {
   };
 
   return (
-    <div className="max-w-narrow mx-auto p-6">
-      <h1 className="font-heading font-extrabold text-2xl text-ink mb-5">Lista de compra</h1>
+    <div className="max-w-narrow mx-auto px-5 md:px-6 pt-3 md:pt-6 pb-6">
+      <h1 className="font-heading font-extrabold text-[32px] md:text-[34px] text-ink mb-5">Lista de compra</h1>
 
-      <section className="bg-white rounded-[18px] shadow-cardSm p-5 mb-5">
+      <section className="bg-white rounded-[22px] shadow-ios p-5 mb-5">
         <h2 className="font-heading font-bold text-lg text-ink mb-3">Selecciona recetas</h2>
         {isLoadingRecipes && <p className="text-sand-500">Cargando recetas...</p>}
         {!isLoadingRecipes && recipes.length === 0 && (
@@ -59,13 +63,13 @@ function ShoppingListPage() {
         <button
           onClick={handleGenerate}
           disabled={selectedRecipeIds.length === 0 || isLoading}
-          className="px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm disabled:opacity-50"
+          className="px-5 py-3 rounded-2xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm shadow-cta disabled:opacity-50 disabled:shadow-none"
         >
           Generar lista
         </button>
       </section>
 
-      <section className="bg-white rounded-[18px] shadow-cardSm p-5">
+      <section className="bg-white rounded-[22px] shadow-ios p-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-heading font-bold text-lg text-ink">Tu lista</h2>
           {items.length > 0 && (

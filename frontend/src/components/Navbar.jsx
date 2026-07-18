@@ -21,7 +21,7 @@ function Navbar() {
     `font-bold text-[15px] ${active ? "text-primary-500" : "text-sand-600 hover:text-ink"}`;
 
   return (
-    <nav className="sticky top-0 z-20 border-b border-sand-100 bg-white">
+    <nav className="hidden md:block sticky top-0 z-20 border-b border-sand-100 bg-white/80 backdrop-blur-xl">
       <div className="max-w-content mx-auto flex items-center justify-between px-5 py-3.5">
         <Link to="/recipes" onClick={closeMenu} className="flex items-center">
           <Logo size={38} />

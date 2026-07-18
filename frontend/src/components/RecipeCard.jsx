@@ -10,7 +10,7 @@ function RecipeCard({ recipe, onToggleFavorite }) {
   return (
     <Link
       to={`/recipes/${recipe.id}`}
-      className="block bg-white rounded-[18px] overflow-hidden shadow-cardSm hover:shadow-card transition-shadow"
+      className="block bg-white rounded-[22px] overflow-hidden shadow-ios hover:shadow-card transition-shadow"
     >
       <div
         className="relative h-[140px] flex items-center justify-center"
@@ -32,11 +32,15 @@ function RecipeCard({ recipe, onToggleFavorite }) {
           {recipe.is_favorite ? "⭐" : "☆"}
         </button>
       </div>
-      <div className="p-3.5 flex flex-col gap-1.5">
-        <h3 className="font-extrabold text-[15px] text-ink">{recipe.title}</h3>
-        <div className="text-xs font-semibold text-sand-500 flex gap-2.5">
-          <span>⏱ {recipe.time_min} min</span>
-          <span>{DIFFICULTY_LABELS[recipe.difficulty]}</span>
+      <div className="p-3.5 flex flex-col gap-2.5">
+        <h3 className="font-extrabold text-[17px] text-ink leading-tight">{recipe.title}</h3>
+        <div className="flex gap-2">
+          <span className="px-2.5 py-1 rounded-full bg-primary-50 text-primary-500 font-bold text-[12px]">
+            ⏱ {recipe.time_min} min
+          </span>
+          <span className="px-2.5 py-1 rounded-full bg-accent-50 text-accent-500 font-bold text-[12px]">
+            {DIFFICULTY_LABELS[recipe.difficulty]}
+          </span>
         </div>
       </div>
     </Link>

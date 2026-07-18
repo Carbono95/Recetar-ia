@@ -28,12 +28,12 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream px-5 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-cream to-[#f7ecd8] px-5 py-8">
       <div className="w-full max-w-[380px] flex flex-col items-center gap-6">
         <LogoIcon size={72} />
 
         <div className="text-center">
-          <div className="font-heading font-extrabold text-2xl text-ink">Crear cuenta</div>
+          <div className="font-heading font-extrabold text-[28px] text-ink">Crear cuenta</div>
           <div className="text-sm font-semibold text-sand-500 mt-1">
             únete a Recetar<span className="text-primary-500 font-extrabold">IA</span>
           </div>
@@ -74,7 +74,7 @@ function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-1.5 px-4 py-3.5 border-none rounded-[14px] bg-accent-500 hover:bg-accent-600 text-white font-extrabold text-[15px] disabled:opacity-50"
+              className="mt-1.5 px-4 py-3.5 border-none rounded-[16px] bg-accent-500 hover:bg-accent-600 text-white font-extrabold text-[16px] shadow-[0_8px_20px_-6px_rgba(249,115,22,0.5)] disabled:opacity-50 disabled:shadow-none"
             >
               {isLoading ? "Creando cuenta..." : "Crear cuenta"}
             </button>

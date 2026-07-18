@@ -27,14 +27,16 @@ function RecipesPage() {
   const pageTitle = filters.favoritesOnly ? "Favoritos" : "Recetario";
 
   return (
-    <div className="max-w-content mx-auto p-6">
-      <div className="flex items-center justify-between flex-wrap gap-3.5 mb-5">
-        <h1 className="font-heading font-extrabold text-2xl text-ink">{pageTitle}</h1>
+    <div className="max-w-content mx-auto px-5 md:px-6 pt-3 md:pt-6 pb-6">
+      <div className="flex items-center justify-between gap-3.5 mb-4">
+        <h1 className="font-heading font-extrabold text-[32px] md:text-[34px] text-ink">{pageTitle}</h1>
         <Link
           to="/recipes/new"
-          className="px-[18px] py-2.5 bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm rounded-xl"
+          aria-label="Nueva receta"
+          className="shrink-0 flex items-center justify-center bg-primary-500 hover:bg-primary-600 text-white shadow-cta w-10 h-10 rounded-full md:w-auto md:h-auto md:px-[18px] md:py-2.5 md:rounded-xl md:shadow-none"
         >
-          + Nueva receta
+          <span className="md:hidden text-[26px] leading-none -mt-0.5">+</span>
+          <span className="hidden md:inline font-bold text-sm">+ Nueva receta</span>
         </Link>
       </div>
 

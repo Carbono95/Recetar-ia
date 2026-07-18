@@ -28,7 +28,7 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream px-5 py-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-cream to-[#f7ecd8] px-5 py-8">
       <div className="w-full max-w-[380px] flex flex-col items-center gap-6">
         <LogoIcon size={88} />
 
@@ -70,7 +70,7 @@ function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-1.5 px-4 py-3.5 border-none rounded-[14px] bg-primary-500 hover:bg-primary-600 text-white font-extrabold text-[15px] disabled:opacity-50"
+              className="mt-1.5 px-4 py-3.5 border-none rounded-[16px] bg-primary-500 hover:bg-primary-600 text-white font-extrabold text-[16px] shadow-cta disabled:opacity-50 disabled:shadow-none"
             >
               {isLoading ? "Iniciando sesión..." : "Entrar"}
             </button>

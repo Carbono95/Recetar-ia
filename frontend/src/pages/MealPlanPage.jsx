@@ -58,25 +58,25 @@ function MealPlanPage() {
   const days = Array.from({ length: DAY_COUNT }, (_, index) => addDays(weekStart, index));
 
   return (
-    <div className="max-w-content mx-auto p-6">
+    <div className="max-w-content mx-auto px-5 md:px-6 pt-3 md:pt-6 pb-6">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h1 className="font-heading font-extrabold text-2xl text-ink">Planner semanal</h1>
+        <h1 className="font-heading font-extrabold text-[32px] md:text-[34px] text-ink">Planner semanal</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={goToPreviousWeek}
-            className="px-3 py-1.5 border border-sand-200 rounded-xl text-sm font-bold text-sand-600 hover:bg-cream"
+            className="px-4 py-2 rounded-full bg-white text-sm font-bold text-sand-600 shadow-cardSm hover:text-ink"
           >
             ← Anterior
           </button>
           <button
             onClick={goToCurrentWeek}
-            className="px-3 py-1.5 border border-sand-200 rounded-xl text-sm font-bold text-sand-600 hover:bg-cream"
+            className="px-4 py-2 rounded-full bg-white text-sm font-bold text-sand-600 shadow-cardSm hover:text-ink"
           >
             Hoy
           </button>
           <button
             onClick={goToNextWeek}
-            className="px-3 py-1.5 border border-sand-200 rounded-xl text-sm font-bold text-sand-600 hover:bg-cream"
+            className="px-4 py-2 rounded-full bg-white text-sm font-bold text-sand-600 shadow-cardSm hover:text-ink"
           >
             Siguiente →
           </button>
@@ -112,7 +112,7 @@ function MealPlanPage() {
       <button
         onClick={handleGenerate}
         disabled={entries.length === 0}
-        className="px-4 py-2.5 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm disabled:opacity-50"
+        className="px-5 py-3 rounded-2xl bg-primary-500 hover:bg-primary-600 text-white font-bold text-sm shadow-cta disabled:opacity-50 disabled:shadow-none"
       >
         Generar lista de compra semanal
       </button>
