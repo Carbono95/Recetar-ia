@@ -1,0 +1,17 @@
+{
+  "project": "RecetarIA",
+  "platform": "ios",
+  "github": {
+    "owner": "Carbono95",
+    "repo": "Recetar-ia"
+  },
+  "ios": {
+    "path": "mobile/ios",
+    "scheme": "RecetarIA"
+  },
+  "flutter": {
+    "watch": {}
+  },
+  "reactNative": {},
+  "mobai": {}
+}
