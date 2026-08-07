@@ -1,0 +1,10 @@
+{
+  "name": "recetaria-monorepo",
+  "version": "0.1.0",
+  "description": "Monorepo de RecetarIA: web (frontend), core compartido (packages/core) y app iOS (mobile).",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "packages/*"
+  ]
+}

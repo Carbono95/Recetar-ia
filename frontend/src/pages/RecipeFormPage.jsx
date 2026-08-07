@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import { recipeService } from "@recetaria/core";
+
 import RecipeForm from "../components/forms/RecipeForm.jsx";
-import recipeService from "../services/recipeService";
 
 function RecipeFormPage() {
   const { id } = useParams();

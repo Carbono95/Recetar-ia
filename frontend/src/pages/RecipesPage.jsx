@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
+import { useRecipes, recipeService } from "@recetaria/core";
+
 import RecipeCard from "../components/RecipeCard.jsx";
 import SearchBar from "../components/SearchBar.jsx";
-import { useRecipes } from "../hooks/useRecipes.js";
-import recipeService from "../services/recipeService";
 
 function RecipesPage() {
   const [searchParams, setSearchParams] = useSearchParams();

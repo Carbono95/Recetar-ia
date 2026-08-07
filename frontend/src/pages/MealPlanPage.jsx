@@ -3,9 +3,9 @@ import { es } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useMealPlan, recipeService } from "@recetaria/core";
+
 import MealPlanDay from "../components/MealPlanDay.jsx";
-import { useMealPlan } from "../hooks/useMealPlan.js";
-import recipeService from "../services/recipeService";
 
 const DAY_COUNT = 7;
 

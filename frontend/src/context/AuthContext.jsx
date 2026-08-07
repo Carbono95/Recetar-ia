@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
+import { authService } from "@recetaria/core";
 
-import authService from "../services/authService";
 import { webStorage } from "../services/webStorage";
 
 export const AuthContext = createContext(null);

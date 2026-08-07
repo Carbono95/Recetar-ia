@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { useShopping, recipeService } from "@recetaria/core";
+
 import ShoppingListItem from "../components/ShoppingListItem.jsx";
-import { useShopping } from "../hooks/useShopping.js";
-import recipeService from "../services/recipeService";
 
 function ShoppingListPage() {
   const [searchParams] = useSearchParams();

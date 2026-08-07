@@ -1,0 +1,16 @@
+{
+  "name": "@recetaria/core",
+  "version": "0.1.0",
+  "description": "Capa compartida (cliente HTTP, services y hooks de datos) entre la web y la app iOS.",
+  "type": "module",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "peerDependencies": {
+    "date-fns": ">=3",
+    "react": ">=18"
+  },
+  "private": true
+}

@@ -1,7 +1,7 @@
 // Cliente HTTP agnóstico de plataforma. No usa APIs del navegador ni de Vite:
 // recibe por inyección la URL base, el storage (async) y qué hacer ante un 401.
 // Esto permite compartir exactamente este archivo entre la web (localStorage) y
-// el móvil (expo-secure-store) — se moverá tal cual a packages/core en la Fase 1.2.
+// el móvil (expo-secure-store).
 export function createApiClient({ apiUrl, storage, onUnauthorized }) {
   async function authHeaders() {
     const token = await storage.getItem("access_token");

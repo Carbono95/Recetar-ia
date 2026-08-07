@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+import { recipeService } from "@recetaria/core";
+
 import { useAuth } from "../hooks/useAuth";
-import recipeService from "../services/recipeService";
 import { getPlaceholderColor, PlacePlateIcon } from "../utils/recipePlaceholder.jsx";
 
 const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil" };

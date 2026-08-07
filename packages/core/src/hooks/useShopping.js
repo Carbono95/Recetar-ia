@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { notify } from "../services/notify";
+import { notify } from "../notify";
 import shoppingService from "../services/shoppingService";
 
 export function useShopping() {

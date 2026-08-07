@@ -1,4 +1,4 @@
-import api from "./api";
+import { api } from "../apiClient";
 
 const shoppingService = {
   generate: (recipeIds) => api.post("/api/v1/shopping/generate", { recipe_ids: recipeIds }),

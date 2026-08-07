@@ -1,4 +1,4 @@
-import api from "./api";
+import { api } from "../apiClient";
 
 const authService = {
   register: (username, password) => api.post("/api/v1/auth/register", { username, password }),

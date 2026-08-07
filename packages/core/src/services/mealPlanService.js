@@ -1,4 +1,4 @@
-import api from "./api";
+import { api } from "../apiClient";
 
 const mealPlanService = {
   getWeek: (weekLabel) => api.get(`/api/v1/meal-plan?week=${weekLabel}`),
