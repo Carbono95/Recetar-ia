@@ -105,15 +105,21 @@ def test_update_recipe_success(client, auth_headers, category):
     assert response.json()["title"] == "Tortilla con cebolla"
 
 
-def test_update_recipe_forbidden_for_other_user(client, auth_headers, category):
+def test_update_recipe_allowed_for_other_user(client, auth_headers, category):
+    # Recetario compartido: cualquier usuario autenticado puede editar cualquier receta.
     owner_headers = auth_headers("owner3")
     other_headers = auth_headers("other3")
     created = client.post("/api/v1/recipes", json=recipe_payload(category.id), headers=owner_headers)
     recipe_id = created.json()["id"]
 
-    response = client.put(f"/api/v1/recipes/{recipe_id}", json=recipe_payload(category.id), headers=other_headers)
+    response = client.put(
+        f"/api/v1/recipes/{recipe_id}",
+        json=recipe_payload(category.id, title="Editada por otro"),
+        headers=other_headers,
+    )
 
-    assert response.status_code == 403
+    assert response.status_code == 200
+    assert response.json()["title"] == "Editada por otro"
 
 
 def test_delete_recipe_success(client, auth_headers, category):

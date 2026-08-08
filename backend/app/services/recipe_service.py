@@ -5,7 +5,7 @@ from fastapi import UploadFile
 from sqlalchemy.orm import Query, Session
 
 from app.core.config import settings
-from app.core.exceptions import ForbiddenError, RecipeNotFoundError, ValidationError
+from app.core.exceptions import RecipeNotFoundError, ValidationError
 from app.models.category import Category
 from app.models.favorite import Favorite
 from app.models.ingredient import Ingredient
@@ -111,22 +111,16 @@ def get_recipe_or_404(recipe_id: int, db: Session) -> Recipe:
     return recipe
 
 
-def get_owned_recipe(recipe_id: int, current_user: User, db: Session) -> Recipe:
-    """Devuelve la receta si el usuario es su dueño o admin; si no, levanta ForbiddenError."""
-    recipe = get_recipe_or_404(recipe_id, db)
-    ensure_user_can_modify_recipe(recipe, current_user)
-    return recipe
-
-
-def ensure_user_can_modify_recipe(recipe: Recipe, current_user: User) -> None:
-    is_owner = recipe.user_id == current_user.id
-    if not is_owner and current_user.role != "admin":
-        raise ForbiddenError("No tienes permisos para modificar esta receta")
+def get_recipe_for_edit(recipe_id: int, current_user: User, db: Session) -> Recipe:
+    """Recetario compartido: cualquier usuario autenticado puede modificar cualquier
+    receta. Solo se comprueba que exista (404 si no). El parámetro current_user se
+    mantiene como único punto donde reintroducir una regla de permisos si hiciera falta."""
+    return get_recipe_or_404(recipe_id, db)
 
 
 def update_recipe(recipe_id: int, recipe_data: RecipeUpdate, current_user: User, db: Session) -> Recipe:
     """Reemplaza los datos e ingredientes de una receta propia (o de admin)."""
-    recipe = get_owned_recipe(recipe_id, current_user, db)
+    recipe = get_recipe_for_edit(recipe_id, current_user, db)
     ensure_category_exists(recipe_data.category_id, db)
 
     recipe.title = recipe_data.title
@@ -142,13 +136,13 @@ def update_recipe(recipe_id: int, recipe_data: RecipeUpdate, current_user: User,
 
 
 def delete_recipe(recipe_id: int, current_user: User, db: Session) -> None:
-    recipe = get_owned_recipe(recipe_id, current_user, db)
+    recipe = get_recipe_for_edit(recipe_id, current_user, db)
     db.delete(recipe)
     db.commit()
 
 
 def set_recipe_image(recipe_id: int, image_path: str, current_user: User, db: Session) -> Recipe:
-    recipe = get_owned_recipe(recipe_id, current_user, db)
+    recipe = get_recipe_for_edit(recipe_id, current_user, db)
     recipe.image_path = image_path
     db.commit()
     db.refresh(recipe)
