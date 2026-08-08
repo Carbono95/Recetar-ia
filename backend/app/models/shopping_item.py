@@ -15,4 +15,7 @@ class ShoppingItem(Base):
     total_quantity: Mapped[str] = mapped_column(String(50), nullable=False)
     unit: Mapped[str | None] = mapped_column(String(30), nullable=True)
     checked: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Origen del ítem: "recipe" (generado desde recetas) o "manual" (añadido a mano).
+    # Al regenerar desde recetas solo se reemplazan los "recipe"; los manuales se conservan.
+    source: Mapped[str] = mapped_column(String(20), nullable=False, default="recipe")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

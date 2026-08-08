@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useShopping, recipeService } from "@recetaria/core";
 
@@ -10,10 +21,12 @@ import { colors, fonts } from "../theme";
 // (el mismo que la web) para cargar/generar/marcar/vaciar, y recipeService para
 // el selector de recetas desde el que se genera la lista.
 export function ShoppingListScreen() {
-  const { items, isLoading, error, generateList, toggleChecked, clearList } = useShopping();
+  const { items, isLoading, error, generateList, toggleChecked, clearList, addItem, removeItem } = useShopping();
   const [recipes, setRecipes] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newQty, setNewQty] = useState("");
 
   useEffect(() => {
     recipeService
@@ -51,10 +64,19 @@ export function ShoppingListScreen() {
     ]);
   }
 
+  function handleAddItem() {
+    const name = newName.trim();
+    if (!name) return;
+    addItem(name, newQty.trim());
+    setNewName("");
+    setNewQty("");
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>Lista de compra</Text>
 
         {/* Resumen de progreso cuando hay items */}
@@ -114,6 +136,34 @@ export function ShoppingListScreen() {
           ) : null}
         </View>
 
+        {/* Añadir artículo a mano (no solo ingredientes de recetas) */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Añadir artículo</Text>
+          <View style={styles.addRow}>
+            <TextInput
+              style={[styles.addInput, styles.addName]}
+              placeholder="Ej. Detergente, pan…"
+              placeholderTextColor={colors.sand400}
+              value={newName}
+              onChangeText={setNewName}
+              onSubmitEditing={handleAddItem}
+              returnKeyType="done"
+            />
+            <TextInput
+              style={[styles.addInput, styles.addQty]}
+              placeholder="Cant."
+              placeholderTextColor={colors.sand400}
+              value={newQty}
+              onChangeText={setNewQty}
+              onSubmitEditing={handleAddItem}
+              returnKeyType="done"
+            />
+            <Pressable style={[styles.addBtn, !newName.trim() && styles.btnDisabled]} onPress={handleAddItem} disabled={!newName.trim()}>
+              <Text style={styles.addBtnText}>+</Text>
+            </Pressable>
+          </View>
+        </View>
+
         {/* La lista */}
         {isLoading && total === 0 ? (
           <ActivityIndicator color="#16a34a" style={{ marginVertical: 24 }} />
@@ -123,7 +173,7 @@ export function ShoppingListScreen() {
           <View style={styles.empty}>
             <Text style={styles.emptyEmoji}>🛒</Text>
             <Text style={styles.emptyText}>Tu lista está vacía.</Text>
-            <Text style={styles.emptyHint}>Selecciona recetas arriba y genera una lista.</Text>
+            <Text style={styles.emptyHint}>Genera una lista desde recetas o añade artículos a mano.</Text>
           </View>
         ) : (
           <View style={styles.card}>
@@ -144,17 +194,22 @@ export function ShoppingListScreen() {
                     {item.total_quantity} {item.unit}
                   </Text>
                 </View>
+                <Pressable onPress={() => removeItem(item.id)} hitSlop={8} style={styles.itemDelete}>
+                  <Text style={styles.itemDeleteText}>✕</Text>
+                </Pressable>
               </Pressable>
             ))}
           </View>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.screen },
+  flex: { flex: 1 },
   content: { padding: 20, paddingBottom: 32 },
   title: { fontFamily: fonts.heading, fontSize: 34, color: colors.ink, marginBottom: 14 },
 
@@ -244,4 +299,29 @@ const styles = StyleSheet.create({
   itemChecked: { textDecorationLine: "line-through", color: "#b8ae9c" },
   itemQty: { fontSize: 14, fontWeight: "700", color: "#8a8172" },
   itemCheckedQty: { color: "#c4bba8" },
+  itemDelete: { paddingLeft: 10 },
+  itemDeleteText: { fontSize: 15, fontWeight: "800", color: colors.sand400 },
+
+  addRow: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 12 },
+  addInput: {
+    backgroundColor: "#faf8f2",
+    borderWidth: 1,
+    borderColor: "#eee6d6",
+    borderRadius: 12,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+    fontSize: 15,
+    color: colors.ink,
+  },
+  addName: { flex: 1 },
+  addQty: { width: 66, textAlign: "center" },
+  addBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addBtnText: { color: "#fff", fontSize: 26, fontWeight: "400", lineHeight: 28, marginTop: -2 },
 });

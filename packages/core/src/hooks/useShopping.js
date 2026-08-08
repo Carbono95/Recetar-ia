@@ -54,7 +54,27 @@ export function useShopping() {
     setItems([]);
   };
 
-  return { items, isLoading, error, generateList, toggleChecked, clearList };
+  const addItem = async (ingredientName, totalQuantity = "", unit = null) => {
+    try {
+      const item = await shoppingService.addItem({ ingredientName, totalQuantity, unit });
+      setItems((current) => [...current, item]);
+    } catch (err) {
+      notify(err.message || "No se pudo añadir el artículo");
+    }
+  };
+
+  const removeItem = async (itemId) => {
+    const previousItems = items;
+    setItems((current) => current.filter((item) => item.id !== itemId));
+    try {
+      await shoppingService.removeItem(itemId);
+    } catch (err) {
+      setItems(previousItems);
+      notify(err.message || "No se pudo borrar el artículo");
+    }
+  };
+
+  return { items, isLoading, error, generateList, toggleChecked, clearList, addItem, removeItem, refetch: fetchList };
 }
 
 export default useShopping;

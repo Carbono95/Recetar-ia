@@ -55,17 +55,52 @@ def format_quantity(value: float) -> str:
 
 
 def replace_shopping_list(user_id: int, items_data: list[dict], db: Session) -> list[ShoppingItem]:
-    clear_shopping_list(user_id, db)
-    items = [ShoppingItem(user_id=user_id, **data) for data in items_data]
+    """Reemplaza los ítems generados desde recetas, conservando los manuales."""
+    clear_recipe_items(user_id, db)
+    items = [ShoppingItem(user_id=user_id, source="recipe", **data) for data in items_data]
     db.add_all(items)
     db.commit()
     for item in items:
         db.refresh(item)
-    return items
+    # Devolvemos la lista completa (manuales + recién generados) ya ordenada.
+    return get_shopping_list(user_id, db)
+
+
+def clear_recipe_items(user_id: int, db: Session) -> None:
+    """Borra solo los ítems procedentes de recetas (deja los manuales)."""
+    db.query(ShoppingItem).filter(
+        ShoppingItem.user_id == user_id, ShoppingItem.source == "recipe"
+    ).delete()
+    db.commit()
 
 
 def clear_shopping_list(user_id: int, db: Session) -> None:
+    """Vacía la lista entera (manuales incluidos)."""
     db.query(ShoppingItem).filter(ShoppingItem.user_id == user_id).delete()
+    db.commit()
+
+
+def add_manual_item(
+    user_id: int, ingredient_name: str, total_quantity: str, unit: str | None, db: Session
+) -> ShoppingItem:
+    """Añade un artículo a mano a la lista (source='manual')."""
+    item = ShoppingItem(
+        user_id=user_id,
+        ingredient_name=ingredient_name.strip(),
+        total_quantity=total_quantity.strip(),
+        unit=unit.strip() if unit else None,
+        source="manual",
+    )
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+def delete_item(item_id: int, user_id: int, db: Session) -> None:
+    """Borra un ítem individual de la lista (cualquier origen)."""
+    item = get_owned_item_or_404(item_id, user_id, db)
+    db.delete(item)
     db.commit()
 
 

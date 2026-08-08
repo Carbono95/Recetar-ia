@@ -121,6 +121,67 @@ def test_check_shopping_item_forbidden_for_other_user(client, auth_headers, cate
     assert response.status_code == 404
 
 
+def test_add_manual_item(client, auth_headers):
+    headers = auth_headers()
+    response = client.post(
+        "/api/v1/shopping/items",
+        json={"ingredient_name": "Detergente", "total_quantity": "1", "unit": "bote"},
+        headers=headers,
+    )
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["ingredient_name"] == "Detergente"
+    assert body["source"] == "manual"
+
+
+def test_add_manual_item_only_name(client, auth_headers):
+    headers = auth_headers()
+    response = client.post("/api/v1/shopping/items", json={"ingredient_name": "Papel"}, headers=headers)
+
+    assert response.status_code == 201
+    assert response.json()["total_quantity"] == ""
+
+
+def test_generate_preserves_manual_items(client, auth_headers, category):
+    """Al regenerar desde recetas se conservan los artículos añadidos a mano."""
+    headers = auth_headers()
+    client.post("/api/v1/shopping/items", json={"ingredient_name": "Detergente"}, headers=headers)
+    recipe_id = create_recipe(
+        client, headers, category.id, "Receta", [{"ingredient_name": "Arroz", "quantity": "1", "unit": "kg"}]
+    )
+
+    client.post("/api/v1/shopping/generate", json={"recipe_ids": [recipe_id]}, headers=headers)
+    items = client.get("/api/v1/shopping", headers=headers).json()["items"]
+
+    names = {item["ingredient_name"] for item in items}
+    assert "Detergente" in names  # el manual sobrevive
+    assert "arroz" in names
+
+
+def test_delete_single_item(client, auth_headers):
+    headers = auth_headers()
+    created = client.post("/api/v1/shopping/items", json={"ingredient_name": "Servilletas"}, headers=headers)
+    item_id = created.json()["id"]
+
+    delete_response = client.delete(f"/api/v1/shopping/{item_id}", headers=headers)
+    items = client.get("/api/v1/shopping", headers=headers).json()["items"]
+
+    assert delete_response.status_code == 204
+    assert items == []
+
+
+def test_delete_item_forbidden_for_other_user(client, auth_headers):
+    owner_headers = auth_headers("owner3")
+    other_headers = auth_headers("other3")
+    created = client.post("/api/v1/shopping/items", json={"ingredient_name": "Lejía"}, headers=owner_headers)
+    item_id = created.json()["id"]
+
+    response = client.delete(f"/api/v1/shopping/{item_id}", headers=other_headers)
+
+    assert response.status_code == 404
+
+
 def test_clear_shopping_list(client, auth_headers, category):
     headers = auth_headers()
     recipe_id = create_recipe(
