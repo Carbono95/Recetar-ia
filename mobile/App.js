@@ -1,4 +1,4 @@
-import { Alert, Text } from "react-native";
+import { ActivityIndicator, Alert, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -29,6 +29,16 @@ const Tab = createBottomTabNavigator();
 
 function TabIcon({ emoji, focused }) {
   return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>;
+}
+
+// Splash mientras el AuthContext comprueba si hay una sesión guardada.
+function SplashScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fffdf7" }}>
+      <Text style={{ fontSize: 28, fontWeight: "700", color: "#1a1a1a", marginBottom: 16 }}>RecetarIA</Text>
+      <ActivityIndicator size="large" color="#16a34a" />
+    </View>
+  );
 }
 
 // Pestaña de recetas: su propio stack lista → detalle.
@@ -71,7 +81,8 @@ function AuthedTabs() {
 
 // Con sesión → tabs; sin sesión → login.
 function RootNavigator() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <SplashScreen />;
   return user ? (
     <AuthedTabs />
   ) : (

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { authService } from "@recetaria/core";
 
 import { secureStorage } from "../secureStorage";
@@ -10,6 +10,32 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  // isLoading cubre el arranque: mientras comprobamos si hay sesión guardada no
+  // sabemos aún si mostrar login o la app.
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Auto-login: al abrir la app, si hay un token guardado recuperamos el perfil.
+  useEffect(() => {
+    let mounted = true;
+    async function restoreSession() {
+      try {
+        const token = await secureStorage.getItem("access_token");
+        if (!token) return;
+        const profile = await authService.me();
+        if (mounted) setUser(profile);
+      } catch {
+        // Token inválido/expirado: lo limpiamos para no reintentar en bucle.
+        await secureStorage.removeItem("access_token");
+        await secureStorage.removeItem("refresh_token");
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    }
+    restoreSession();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   async function login(username, password) {
     const tokens = await authService.login(username, password);
@@ -26,7 +52,9 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
