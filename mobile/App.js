@@ -12,6 +12,7 @@ import { LoginScreen } from "./src/screens/LoginScreen";
 import { RecipesScreen } from "./src/screens/RecipesScreen";
 import { RecipeDetailScreen } from "./src/screens/RecipeDetailScreen";
 import { ShoppingListScreen } from "./src/screens/ShoppingListScreen";
+import { PlannerScreen } from "./src/screens/PlannerScreen";
 
 // Configuración móvil del core: misma lógica que la web (main.jsx), inyectando
 // el storage seguro del iPhone. Se hace una vez, al cargar el módulo.
@@ -69,6 +70,11 @@ function AuthedTabs() {
         name="RecetasTab"
         component={RecipesStack}
         options={{ title: "Recetas", tabBarIcon: ({ focused }) => <TabIcon emoji="🍳" focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="PlannerTab"
+        component={PlannerScreen}
+        options={{ title: "Planner", tabBarIcon: ({ focused }) => <TabIcon emoji="📅" focused={focused} /> }}
       />
       <Tab.Screen
         name="ListaTab"
