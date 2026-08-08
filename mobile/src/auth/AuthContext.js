@@ -46,6 +46,14 @@ export function AuthProvider({ children }) {
     setUser(profile);
   }
 
+  async function register(username, password) {
+    // /auth/register devuelve { user, tokens }: registramos y entramos directo.
+    const { user: profile, tokens } = await authService.register(username, password);
+    await secureStorage.setItem("access_token", tokens.access_token);
+    await secureStorage.setItem("refresh_token", tokens.refresh_token);
+    setUser(profile);
+  }
+
   async function logout() {
     await secureStorage.removeItem("access_token");
     await secureStorage.removeItem("refresh_token");
@@ -53,7 +61,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>{children}</AuthContext.Provider>
   );
 }
 

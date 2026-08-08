@@ -28,7 +28,8 @@
         {
           "photosPermission": "RecetarIA necesita acceso a tus fotos para poner la imagen de una receta."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

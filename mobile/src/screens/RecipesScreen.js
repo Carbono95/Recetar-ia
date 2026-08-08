@@ -1,33 +1,25 @@
 import { useCallback, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, Image, Pressable, RefreshControl, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRecipes } from "@recetaria/core";
 
 import { useAuth } from "../auth/AuthContext";
 import { API_URL } from "../config";
+import { colors, fonts, shadows } from "../theme";
+import { PlateIcon } from "../components/icons";
 
 const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil" };
+// Fondos pastel que rotan por tarjeta, como en el diseño.
+const CARD_TINTS = ["#fde8dc", "#e6f2e0", "#fdf0d8", "#e7eefb", "#f7e6f0"];
 
-// Primera pantalla real portada al móvil. Consume el hook useRecipes de
-// @recetaria/core — el MISMO que usa la web — probando que compartir hooks
-// (no solo services) funciona en React Native en runtime.
 export function RecipesScreen({ navigation }) {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const { recipes, isLoading, error, toggleFavorite, refetch } = useRecipes();
 
-  // Al volver a la lista (p. ej. tras crear/editar/eliminar una receta) la
-  // refrescamos. El primer foco lo salta porque el hook ya carga al montar.
+  // Al volver a la lista (tras crear/editar/eliminar) la refrescamos. El primer
+  // foco lo salta porque el hook ya carga al montar.
   const isFirstFocus = useRef(true);
   useFocusEffect(
     useCallback(() => {
@@ -39,26 +31,22 @@ export function RecipesScreen({ navigation }) {
     }, [refetch])
   );
 
-  function renderItem({ item }) {
+  function renderItem({ item, index }) {
     const imageUrl = item.image_path ? `${API_URL}${item.image_path}` : null;
     return (
       <Pressable
         style={styles.card}
         onPress={() => navigation.navigate("RecipeDetail", { recipeId: item.id, title: item.title })}
       >
-        <View style={styles.thumbWrap}>
+        <View style={[styles.thumbWrap, { backgroundColor: CARD_TINTS[index % CARD_TINTS.length] }]}>
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.thumb} />
           ) : (
-            <View style={[styles.thumb, styles.placeholder]}>
-              <Text style={styles.placeholderEmoji}>🍽️</Text>
+            <View style={styles.plate}>
+              <PlateIcon size={46} color={colors.ink} />
             </View>
           )}
-          <Pressable
-            style={styles.favBtn}
-            onPress={() => toggleFavorite(item.id, !item.is_favorite)}
-            hitSlop={8}
-          >
+          <Pressable style={styles.favBtn} onPress={() => toggleFavorite(item.id, !item.is_favorite)} hitSlop={8}>
             <Text style={styles.favIcon}>{item.is_favorite ? "⭐" : "☆"}</Text>
           </Pressable>
         </View>
@@ -81,23 +69,20 @@ export function RecipesScreen({ navigation }) {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <StatusBar style="dark" />
       <View style={styles.header}>
-        <View>
-          <Text style={styles.hello}>Hola, {user.username}</Text>
-          <Text style={styles.headerSub}>Tus recetas</Text>
-        </View>
+        <Text style={styles.title}>Recetario</Text>
         <View style={styles.headerActions}>
-          <Pressable onPress={() => navigation.navigate("RecipeForm")} hitSlop={8}>
-            <Text style={styles.newBtn}>+ Nueva</Text>
-          </Pressable>
           <Pressable onPress={logout} hitSlop={8}>
             <Text style={styles.logout}>Salir</Text>
+          </Pressable>
+          <Pressable style={styles.fab} onPress={() => navigation.navigate("RecipeForm")} hitSlop={6}>
+            <Text style={styles.fabPlus}>+</Text>
           </Pressable>
         </View>
       </View>
 
       {isLoading && recipes.length === 0 ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color="#16a34a" />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : error ? (
         <View style={styles.center}>
@@ -109,12 +94,11 @@ export function RecipesScreen({ navigation }) {
           keyExtractor={(recipe) => String(recipe.id)}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
-          refreshControl={
-            <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor="#16a34a" />
-          }
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />}
           ListEmptyComponent={
             <View style={styles.center}>
-              <Text style={styles.empty}>Aún no hay recetas.</Text>
+              <Text style={styles.empty}>Aún no hay recetas. Toca + para crear una.</Text>
             </View>
           }
         />
@@ -124,7 +108,7 @@ export function RecipesScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fffdf7" },
+  safe: { flex: 1, backgroundColor: colors.screen },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -133,45 +117,43 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 12,
   },
-  hello: { fontSize: 22, fontWeight: "700", color: "#1a1a1a" },
-  headerSub: { fontSize: 14, color: "#6b7280", marginTop: 2 },
+  title: { fontFamily: fonts.heading, fontSize: 34, color: colors.ink },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 16 },
-  newBtn: { fontSize: 15, fontWeight: "700", color: "#16a34a" },
-  logout: { fontSize: 15, fontWeight: "600", color: "#dc2626" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40, minHeight: 200 },
-  error: { color: "#dc2626", fontSize: 15, textAlign: "center" },
-  empty: { color: "#6b7280", fontSize: 15 },
-  listContent: { paddingHorizontal: 16, paddingBottom: 24, gap: 14 },
-  card: {
-    backgroundColor: "white",
-    borderRadius: 22,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+  logout: { fontSize: 15, fontWeight: "600", color: colors.sand500 },
+  fab: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    ...shadows.cta,
   },
-  thumbWrap: { height: 140, position: "relative" },
+  fabPlus: { color: "#fff", fontSize: 28, fontWeight: "400", lineHeight: 30, marginTop: -2 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40, minHeight: 200 },
+  error: { color: colors.danger, fontSize: 15, textAlign: "center" },
+  empty: { color: colors.sand500, fontSize: 15, textAlign: "center" },
+  listContent: { paddingHorizontal: 20, paddingBottom: 24, gap: 16 },
+  card: { backgroundColor: colors.card, borderRadius: 22, overflow: "hidden", ...shadows.ios },
+  thumbWrap: { height: 130, position: "relative", alignItems: "center", justifyContent: "center" },
   thumb: { width: "100%", height: "100%" },
-  placeholder: { backgroundColor: "#eef2f7", alignItems: "center", justifyContent: "center" },
-  placeholderEmoji: { fontSize: 40 },
+  plate: { opacity: 0.5 },
   favBtn: {
     position: "absolute",
-    top: 10,
-    right: 10,
+    top: 11,
+    right: 11,
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "rgba(255,255,255,0.92)",
+    backgroundColor: "rgba(255,255,255,0.9)",
     alignItems: "center",
     justifyContent: "center",
   },
-  favIcon: { fontSize: 16 },
-  cardBody: { padding: 14, gap: 10 },
-  cardTitle: { fontSize: 17, fontWeight: "800", color: "#1a1a1a", lineHeight: 21 },
-  tagsRow: { flexDirection: "row", gap: 8 },
-  tag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, fontSize: 12, fontWeight: "700", overflow: "hidden" },
-  tagTime: { backgroundColor: "#dcfce7", color: "#16a34a" },
-  tagDiff: { backgroundColor: "#fef3c7", color: "#b45309" },
+  favIcon: { fontSize: 17 },
+  cardBody: { paddingHorizontal: 15, paddingTop: 13, paddingBottom: 15 },
+  cardTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.ink },
+  tagsRow: { flexDirection: "row", gap: 8, marginTop: 9 },
+  tag: { paddingHorizontal: 11, paddingVertical: 4, borderRadius: 100, fontSize: 12, fontWeight: "700", overflow: "hidden" },
+  tagTime: { backgroundColor: colors.primaryTint, color: colors.primary },
+  tagDiff: { backgroundColor: colors.accentTint, color: colors.accent },
 });

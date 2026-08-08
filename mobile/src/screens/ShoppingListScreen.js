@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useShopping, recipeService } from "@recetaria/core";
+
+import { colors, fonts } from "../theme";
 
 // Lista de compra en el móvil. Reusa el hook useShopping de @recetaria/core
 // (el mismo que la web) para cargar/generar/marcar/vaciar, y recipeService para
@@ -19,6 +13,7 @@ export function ShoppingListScreen() {
   const { items, isLoading, error, generateList, toggleChecked, clearList } = useShopping();
   const [recipes, setRecipes] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
+  const [selectorOpen, setSelectorOpen] = useState(false);
 
   useEffect(() => {
     recipeService
@@ -26,6 +21,16 @@ export function ShoppingListScreen() {
       .then((data) => setRecipes(data.items))
       .catch(() => {});
   }, []);
+
+  // El selector arranca abierto solo si aún no hay lista, para no estorbar.
+  useEffect(() => {
+    if (!isLoading) setSelectorOpen(items.length === 0);
+  }, [isLoading, items.length]);
+
+  const checkedCount = items.filter((item) => item.checked).length;
+  const total = items.length;
+  const progress = total > 0 ? checkedCount / total : 0;
+  const allDone = total > 0 && checkedCount === total;
 
   function toggleRecipe(id) {
     setSelectedIds((current) =>
@@ -36,6 +41,7 @@ export function ShoppingListScreen() {
   function handleGenerate() {
     if (selectedIds.length === 0) return;
     generateList(selectedIds);
+    setSelectedIds([]);
   }
 
   function handleClear() {
@@ -48,80 +54,130 @@ export function ShoppingListScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <StatusBar style="dark" />
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Lista de compra</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Selecciona recetas</Text>
-          {recipes.length === 0 ? (
-            <Text style={styles.muted}>Aún no tienes recetas creadas.</Text>
-          ) : (
-            recipes.map((recipe) => {
-              const selected = selectedIds.includes(recipe.id);
-              return (
-                <Pressable key={recipe.id} style={styles.recipeRow} onPress={() => toggleRecipe(recipe.id)}>
-                  <View style={[styles.checkbox, selected && styles.checkboxOn]}>
-                    {selected && <Text style={styles.checkboxMark}>✓</Text>}
-                  </View>
-                  <Text style={styles.recipeTitle}>{recipe.title}</Text>
-                </Pressable>
-              );
-            })
-          )}
-          <Pressable
-            style={[styles.generateBtn, selectedIds.length === 0 && styles.btnDisabled]}
-            onPress={handleGenerate}
-            disabled={selectedIds.length === 0 || isLoading}
-          >
-            <Text style={styles.generateText}>Generar lista</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.card}>
-          <View style={styles.listHeader}>
-            <Text style={styles.sectionTitle}>Tu lista</Text>
-            {items.length > 0 && (
+        {/* Resumen de progreso cuando hay items */}
+        {total > 0 ? (
+          <View style={styles.progressCard}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressLabel}>
+                {allDone ? "¡Todo comprado! 🎉" : `${checkedCount} de ${total} comprados`}
+              </Text>
               <Pressable onPress={handleClear} hitSlop={8}>
                 <Text style={styles.clear}>Vaciar</Text>
               </Pressable>
-            )}
+            </View>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` }]} />
+            </View>
           </View>
+        ) : null}
 
-          {isLoading && items.length === 0 ? (
-            <ActivityIndicator color="#16a34a" style={{ marginVertical: 16 }} />
-          ) : error ? (
-            <Text style={styles.error}>❌ {error}</Text>
-          ) : items.length === 0 ? (
-            <Text style={styles.muted}>Tu lista está vacía. Selecciona recetas y genera una lista.</Text>
-          ) : (
-            items.map((item, idx) => (
+        {/* Selector de recetas plegable */}
+        <View style={styles.card}>
+          <Pressable style={styles.selectorHeader} onPress={() => setSelectorOpen((v) => !v)} hitSlop={6}>
+            <Text style={styles.sectionTitle}>Añadir desde recetas</Text>
+            <Text style={styles.chevron}>{selectorOpen ? "▲" : "▼"}</Text>
+          </Pressable>
+
+          {selectorOpen ? (
+            <View style={styles.selectorBody}>
+              {recipes.length === 0 ? (
+                <Text style={styles.muted}>Aún no tienes recetas creadas.</Text>
+              ) : (
+                recipes.map((recipe) => {
+                  const selected = selectedIds.includes(recipe.id);
+                  return (
+                    <Pressable key={recipe.id} style={styles.recipeRow} onPress={() => toggleRecipe(recipe.id)}>
+                      <View style={[styles.checkbox, selected && styles.checkboxOn]}>
+                        {selected ? <Text style={styles.checkboxMark}>✓</Text> : null}
+                      </View>
+                      <Text style={styles.recipeTitle}>{recipe.title}</Text>
+                    </Pressable>
+                  );
+                })
+              )}
+              <Pressable
+                style={[styles.generateBtn, selectedIds.length === 0 && styles.btnDisabled]}
+                onPress={handleGenerate}
+                disabled={selectedIds.length === 0 || isLoading}
+              >
+                <Text style={styles.generateText}>Generar lista</Text>
+                {selectedIds.length > 0 ? (
+                  <View style={styles.countBadge}>
+                    <Text style={styles.countText}>{selectedIds.length}</Text>
+                  </View>
+                ) : null}
+              </Pressable>
+            </View>
+          ) : null}
+        </View>
+
+        {/* La lista */}
+        {isLoading && total === 0 ? (
+          <ActivityIndicator color="#16a34a" style={{ marginVertical: 24 }} />
+        ) : error ? (
+          <Text style={styles.error}>❌ {error}</Text>
+        ) : total === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyEmoji}>🛒</Text>
+            <Text style={styles.emptyText}>Tu lista está vacía.</Text>
+            <Text style={styles.emptyHint}>Selecciona recetas arriba y genera una lista.</Text>
+          </View>
+        ) : (
+          <View style={styles.card}>
+            {items.map((item, idx) => (
               <Pressable
                 key={item.id}
                 style={[styles.itemRow, idx < items.length - 1 && styles.itemBorder]}
                 onPress={() => toggleChecked(item.id, !item.checked)}
               >
                 <View style={[styles.circle, item.checked && styles.circleOn]}>
-                  {item.checked && <Text style={styles.circleMark}>✓</Text>}
+                  {item.checked ? <Text style={styles.circleMark}>✓</Text> : null}
                 </View>
-                <Text style={[styles.itemText, item.checked && styles.itemChecked]}>
-                  {item.total_quantity} {item.unit} de {item.ingredient_name}
-                </Text>
+                <View style={styles.itemBody}>
+                  <Text style={[styles.itemName, item.checked && styles.itemChecked]}>
+                    {item.ingredient_name}
+                  </Text>
+                  <Text style={[styles.itemQty, item.checked && styles.itemCheckedQty]}>
+                    {item.total_quantity} {item.unit}
+                  </Text>
+                </View>
               </Pressable>
-            ))
-          )}
-        </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fffdf7" },
+  safe: { flex: 1, backgroundColor: colors.screen },
   content: { padding: 20, paddingBottom: 32 },
-  title: { fontSize: 28, fontWeight: "800", color: "#1a1a1a", marginBottom: 16 },
+  title: { fontFamily: fonts.heading, fontSize: 34, color: colors.ink, marginBottom: 14 },
+
+  progressCard: {
+    backgroundColor: "white",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  progressHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
+  progressLabel: { fontSize: 15, fontWeight: "700", color: colors.ink },
+  clear: { color: "#dc2626", fontSize: 14, fontWeight: "700" },
+  progressTrack: { height: 8, borderRadius: 999, backgroundColor: "#eee6d6", overflow: "hidden" },
+  progressFill: { height: 8, borderRadius: 999, backgroundColor: "#16a34a" },
+
   card: {
     backgroundColor: "white",
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 18,
     marginBottom: 16,
     shadowColor: "#000",
@@ -130,7 +186,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#1a1a1a", marginBottom: 10 },
+  selectorHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  sectionTitle: { fontSize: 17, fontWeight: "700", color: colors.ink },
+  chevron: { fontSize: 13, color: "#a99f8c", fontWeight: "700" },
+  selectorBody: { marginTop: 12 },
   muted: { color: "#8a8172", fontSize: 14, fontWeight: "500" },
   recipeRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 7 },
   checkbox: {
@@ -144,32 +203,45 @@ const styles = StyleSheet.create({
   },
   checkboxOn: { backgroundColor: "#16a34a", borderColor: "#16a34a" },
   checkboxMark: { color: "white", fontSize: 14, fontWeight: "800" },
-  recipeTitle: { fontSize: 15, fontWeight: "600", color: "#1a1a1a", flexShrink: 1 },
+  recipeTitle: { fontSize: 15, fontWeight: "600", color: colors.ink, flexShrink: 1 },
   generateBtn: {
     marginTop: 14,
     backgroundColor: "#16a34a",
     paddingVertical: 13,
     borderRadius: 16,
+    flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
   },
-  btnDisabled: { opacity: 0.5 },
+  btnDisabled: { opacity: 0.45 },
   generateText: { color: "white", fontSize: 15, fontWeight: "700" },
-  listHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 },
-  clear: { color: "#dc2626", fontSize: 14, fontWeight: "700" },
+  countBadge: { backgroundColor: "rgba(255,255,255,0.25)", borderRadius: 999, minWidth: 24, paddingHorizontal: 7, paddingVertical: 2, alignItems: "center" },
+  countText: { color: "white", fontSize: 13, fontWeight: "800" },
+
   error: { color: "#dc2626", fontSize: 15, marginVertical: 12 },
+
+  empty: { alignItems: "center", paddingVertical: 36 },
+  emptyEmoji: { fontSize: 48, marginBottom: 12 },
+  emptyText: { fontSize: 16, fontWeight: "700", color: colors.ink },
+  emptyHint: { fontSize: 14, color: "#8a8172", marginTop: 4, textAlign: "center" },
+
   itemRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 13 },
   itemBorder: { borderBottomWidth: 1, borderBottomColor: "#f1ede4" },
   circle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     borderWidth: 2,
     borderColor: "#d8cdb8",
     alignItems: "center",
     justifyContent: "center",
   },
   circleOn: { backgroundColor: "#16a34a", borderColor: "#16a34a" },
-  circleMark: { color: "white", fontSize: 13, fontWeight: "800" },
-  itemText: { fontSize: 16, fontWeight: "600", color: "#1a1a1a", flexShrink: 1 },
+  circleMark: { color: "white", fontSize: 14, fontWeight: "800" },
+  itemBody: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  itemName: { fontSize: 16, fontWeight: "600", color: colors.ink, flexShrink: 1, marginRight: 8 },
   itemChecked: { textDecorationLine: "line-through", color: "#b8ae9c" },
+  itemQty: { fontSize: 14, fontWeight: "700", color: "#8a8172" },
+  itemCheckedQty: { color: "#c4bba8" },
 });

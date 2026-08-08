@@ -15,6 +15,8 @@ import { recipeService } from "@recetaria/core";
 
 import { useAuth } from "../auth/AuthContext";
 import { API_URL } from "../config";
+import { colors, fonts, shadows } from "../theme";
+import { PlateIcon } from "../components/icons";
 
 const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil" };
 
@@ -31,9 +33,6 @@ function assetToFile(asset) {
   return { uri, name, type };
 }
 
-// Detalle de una receta. Reusa recipeService.get de @recetaria/core. El recipeId
-// llega por los params de navegación. Recarga al enfocarse para reflejar las
-// ediciones al volver del formulario.
 export function RecipeDetailScreen({ route, navigation }) {
   const { recipeId } = route.params;
   const { user } = useAuth();
@@ -74,12 +73,8 @@ export function RecipeDetailScreen({ route, navigation }) {
       Alert.alert("Permiso necesario", "Permite el acceso a tus fotos para cambiar la imagen.");
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 0.8,
-    });
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.8 });
     if (result.canceled) return;
-
     setIsUploading(true);
     try {
       const updated = await recipeService.uploadImage(recipeId, assetToFile(result.assets[0]));
@@ -112,7 +107,7 @@ export function RecipeDetailScreen({ route, navigation }) {
   if (isLoading && !recipe) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#16a34a" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -126,16 +121,17 @@ export function RecipeDetailScreen({ route, navigation }) {
   if (!recipe) return null;
 
   const imageUrl = recipe.image_path ? `${API_URL}${recipe.image_path}` : null;
-  const canEdit = user && (user.id === recipe.user_id || user.role === "admin");
+  // Recetario compartido: cualquier usuario autenticado puede editar/eliminar/subir imagen.
+  const canEdit = Boolean(user);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.hero}>
         {imageUrl ? (
           <Image source={{ uri: imageUrl }} style={styles.heroImage} />
         ) : (
-          <View style={[styles.heroImage, styles.placeholder]}>
-            <Text style={styles.placeholderEmoji}>🍽️</Text>
+          <View style={styles.heroPlate}>
+            <PlateIcon size={80} color={colors.ink} />
           </View>
         )}
         <Pressable style={styles.favBtn} onPress={toggleFavorite} hitSlop={8}>
@@ -148,110 +144,103 @@ export function RecipeDetailScreen({ route, navigation }) {
         ) : null}
       </View>
 
-      <Text style={styles.title}>{recipe.title}</Text>
+      {/* Hoja de contenido que solapa el hero (estilo iOS) */}
+      <View style={styles.sheet}>
+        <Text style={styles.title}>{recipe.title}</Text>
 
-      <View style={styles.tagsRow}>
-        <Text style={[styles.tag, styles.tagTime]}>⏱ {recipe.time_min} min</Text>
-        <Text style={[styles.tag, styles.tagDiff]}>
-          {DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}
-        </Text>
-      </View>
-
-      {canEdit ? (
-        <View style={styles.actions}>
-          <Pressable
-            style={[styles.actionBtn, styles.editBtn]}
-            onPress={() => navigation.navigate("RecipeForm", { recipeId })}
-          >
-            <Text style={styles.editText}>Editar</Text>
-          </Pressable>
-          <Pressable style={[styles.actionBtn, styles.deleteBtn]} onPress={handleDelete}>
-            <Text style={styles.deleteText}>Eliminar</Text>
-          </Pressable>
+        <View style={styles.tagsRow}>
+          <Text style={[styles.tag, styles.tagTime]}>⏱ {recipe.time_min} min</Text>
+          <Text style={[styles.tag, styles.tagDiff]}>
+            {DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}
+          </Text>
         </View>
-      ) : null}
 
-      {recipe.description ? <Text style={styles.description}>{recipe.description}</Text> : null}
-
-      <Text style={styles.sectionTitle}>Ingredientes</Text>
-      <View style={styles.ingredientsCard}>
-        {recipe.ingredients?.map((item, idx) => (
-          <View
-            key={`${item.ingredient_name}-${idx}`}
-            style={[styles.ingredientRow, idx < recipe.ingredients.length - 1 && styles.ingredientBorder]}
-          >
-            <Text style={styles.ingredientName}>{item.ingredient_name}</Text>
-            <Text style={styles.ingredientQty}>
-              {item.quantity} {item.unit}
-            </Text>
+        {canEdit ? (
+          <View style={styles.actions}>
+            <Pressable style={[styles.actionBtn, styles.editBtn]} onPress={() => navigation.navigate("RecipeForm", { recipeId })}>
+              <Text style={styles.editText}>Editar</Text>
+            </Pressable>
+            <Pressable style={[styles.actionBtn, styles.deleteBtn]} onPress={handleDelete}>
+              <Text style={styles.deleteText}>Eliminar</Text>
+            </Pressable>
           </View>
-        ))}
+        ) : null}
+
+        {recipe.description ? <Text style={styles.description}>{recipe.description}</Text> : null}
+
+        <Text style={styles.sectionTitle}>Ingredientes</Text>
+        <View style={styles.ingredientsCard}>
+          {recipe.ingredients?.map((item, idx) => (
+            <View
+              key={`${item.ingredient_name}-${idx}`}
+              style={[styles.ingredientRow, idx < recipe.ingredients.length - 1 && styles.ingredientBorder]}
+            >
+              <Text style={styles.ingredientName}>{item.ingredient_name}</Text>
+              <Text style={styles.ingredientQty}>
+                {item.quantity} {item.unit}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#fffdf7" },
-  content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40, backgroundColor: "#fffdf7" },
-  error: { color: "#dc2626", fontSize: 15, textAlign: "center" },
-  hero: { height: 220, borderRadius: 24, overflow: "hidden", position: "relative" },
+  screen: { flex: 1, backgroundColor: colors.screen },
+  content: { paddingBottom: 40 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40, backgroundColor: colors.screen },
+  error: { color: colors.danger, fontSize: 15, textAlign: "center" },
+  hero: { height: 240, position: "relative", backgroundColor: "#fde0d0", alignItems: "center", justifyContent: "center" },
   heroImage: { width: "100%", height: "100%" },
-  placeholder: { backgroundColor: "#eef2f7", alignItems: "center", justifyContent: "center" },
-  placeholderEmoji: { fontSize: 64 },
+  heroPlate: { opacity: 0.45 },
   favBtn: {
     position: "absolute",
-    top: 12,
-    right: 12,
+    top: 14,
+    right: 16,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.9)",
+    backgroundColor: "rgba(255,255,255,0.85)",
     alignItems: "center",
     justifyContent: "center",
   },
-  favIcon: { fontSize: 18 },
+  favIcon: { fontSize: 19 },
   changeImgBtn: {
     position: "absolute",
-    bottom: 12,
-    right: 12,
-    backgroundColor: "rgba(255,255,255,0.92)",
+    bottom: 40,
+    right: 16,
+    backgroundColor: "rgba(255,255,255,0.9)",
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 12,
   },
-  changeImgText: { fontSize: 13, fontWeight: "700", color: "#1a1a1a" },
-  title: { fontSize: 26, fontWeight: "800", color: "#1a1a1a", marginTop: 18, lineHeight: 30 },
+  changeImgText: { fontSize: 13, fontWeight: "700", color: colors.ink },
+  sheet: {
+    backgroundColor: colors.screen,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    marginTop: -26,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+  },
+  title: { fontFamily: fonts.heading, fontSize: 26, color: colors.ink, lineHeight: 30 },
   tagsRow: { flexDirection: "row", gap: 8, marginTop: 12 },
-  tag: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, fontSize: 13, fontWeight: "700", overflow: "hidden" },
-  tagTime: { backgroundColor: "#dcfce7", color: "#16a34a" },
-  tagDiff: { backgroundColor: "#fef3c7", color: "#b45309" },
+  tag: { paddingHorizontal: 13, paddingVertical: 6, borderRadius: 100, fontSize: 13, fontWeight: "700", overflow: "hidden" },
+  tagTime: { backgroundColor: colors.primaryTint, color: colors.primary },
+  tagDiff: { backgroundColor: colors.accentTint, color: colors.accent },
   actions: { flexDirection: "row", gap: 10, marginTop: 16 },
   actionBtn: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 12, borderWidth: 1 },
-  editBtn: { backgroundColor: "white", borderColor: "#e5ddcd" },
-  editText: { fontSize: 14, fontWeight: "700", color: "#4a4238" },
-  deleteBtn: { backgroundColor: "white", borderColor: "#fecaca" },
-  deleteText: { fontSize: 14, fontWeight: "700", color: "#dc2626" },
-  description: { fontSize: 15, lineHeight: 22, color: "#4a4238", marginTop: 16 },
-  sectionTitle: { fontSize: 19, fontWeight: "700", color: "#1a1a1a", marginTop: 24, marginBottom: 10 },
-  ingredientsCard: {
-    backgroundColor: "white",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-  },
-  ingredientRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 14,
-  },
-  ingredientBorder: { borderBottomWidth: 1, borderBottomColor: "#f1ede4" },
-  ingredientName: { fontSize: 15, fontWeight: "600", color: "#1a1a1a" },
-  ingredientQty: { fontSize: 15, fontWeight: "600", color: "#8a8172" },
+  editBtn: { backgroundColor: colors.card, borderColor: colors.sand300 },
+  editText: { fontSize: 14, fontWeight: "700", color: colors.sand600 },
+  deleteBtn: { backgroundColor: colors.card, borderColor: "#fecaca" },
+  deleteText: { fontSize: 14, fontWeight: "700", color: colors.danger },
+  description: { fontSize: 15, lineHeight: 24, color: "#4a4238", marginTop: 16 },
+  sectionTitle: { fontFamily: fonts.headingBold, fontSize: 19, color: colors.ink, marginTop: 22, marginBottom: 10 },
+  ingredientsCard: { backgroundColor: colors.card, borderRadius: 20, paddingHorizontal: 16, ...shadows.ios },
+  ingredientRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 13 },
+  ingredientBorder: { borderBottomWidth: 1, borderBottomColor: colors.hairline },
+  ingredientName: { fontSize: 15, fontWeight: "600", color: colors.ink },
+  ingredientQty: { fontSize: 15, fontWeight: "600", color: colors.sand500 },
 });

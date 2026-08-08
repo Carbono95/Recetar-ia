@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { recipeService } from "@recetaria/core";
 
+import { colors } from "../theme";
+
 const DIFFICULTY_OPTIONS = [
   { value: "facil", label: "Fácil" },
   { value: "media", label: "Media" },
@@ -254,9 +256,9 @@ export function RecipeFormScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  screen: { flex: 1, backgroundColor: "#fffdf7" },
+  screen: { flex: 1, backgroundColor: colors.screen },
   content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#fffdf7" },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.screen },
   label: { fontSize: 14, fontWeight: "700", color: "#4a4238", marginBottom: 6, marginTop: 14 },
   input: {
     backgroundColor: "white",
