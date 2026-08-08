@@ -1,3 +1,4 @@
+import { useCallback, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
 import {
   ActivityIndicator,
@@ -10,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRecipes } from "@recetaria/core";
 
 import { useAuth } from "../auth/AuthContext";
@@ -23,6 +25,19 @@ const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil"
 export function RecipesScreen({ navigation }) {
   const { user, logout } = useAuth();
   const { recipes, isLoading, error, toggleFavorite, refetch } = useRecipes();
+
+  // Al volver a la lista (p. ej. tras crear/editar/eliminar una receta) la
+  // refrescamos. El primer foco lo salta porque el hook ya carga al montar.
+  const isFirstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (isFirstFocus.current) {
+        isFirstFocus.current = false;
+        return;
+      }
+      refetch();
+    }, [refetch])
+  );
 
   function renderItem({ item }) {
     const imageUrl = item.image_path ? `${API_URL}${item.image_path}` : null;
@@ -70,9 +85,14 @@ export function RecipesScreen({ navigation }) {
           <Text style={styles.hello}>Hola, {user.username}</Text>
           <Text style={styles.headerSub}>Tus recetas</Text>
         </View>
-        <Pressable onPress={logout} hitSlop={8}>
-          <Text style={styles.logout}>Salir</Text>
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable onPress={() => navigation.navigate("RecipeForm")} hitSlop={8}>
+            <Text style={styles.newBtn}>+ Nueva</Text>
+          </Pressable>
+          <Pressable onPress={logout} hitSlop={8}>
+            <Text style={styles.logout}>Salir</Text>
+          </Pressable>
+        </View>
       </View>
 
       {isLoading && recipes.length === 0 ? (
@@ -115,6 +135,8 @@ const styles = StyleSheet.create({
   },
   hello: { fontSize: 22, fontWeight: "700", color: "#1a1a1a" },
   headerSub: { fontSize: 14, color: "#6b7280", marginTop: 2 },
+  headerActions: { flexDirection: "row", alignItems: "center", gap: 16 },
+  newBtn: { fontSize: 15, fontWeight: "700", color: "#16a34a" },
   logout: { fontSize: 15, fontWeight: "600", color: "#dc2626" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40, minHeight: 200 },
   error: { color: "#dc2626", fontSize: 15, textAlign: "center" },

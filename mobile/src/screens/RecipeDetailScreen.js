@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -8,32 +9,38 @@ import {
   Text,
   View,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { recipeService } from "@recetaria/core";
 
+import { useAuth } from "../auth/AuthContext";
 import { API_URL } from "../config";
 
 const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil" };
 
-// Detalle de una receta. Reusa recipeService.get de @recetaria/core (el mismo
-// que la web). El recipeId llega por los params de navegación.
-export function RecipeDetailScreen({ route }) {
+// Detalle de una receta. Reusa recipeService.get de @recetaria/core. El recipeId
+// llega por los params de navegación. Recarga al enfocarse para reflejar las
+// ediciones al volver del formulario.
+export function RecipeDetailScreen({ route, navigation }) {
   const { recipeId } = route.params;
+  const { user } = useAuth();
   const [recipe, setRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    let mounted = true;
+  const load = useCallback(() => {
+    let active = true;
     setIsLoading(true);
     recipeService
       .get(recipeId)
-      .then((data) => mounted && setRecipe(data))
-      .catch((err) => mounted && setError(err?.message ?? "No se pudo cargar la receta"))
-      .finally(() => mounted && setIsLoading(false));
+      .then((data) => active && setRecipe(data))
+      .catch((err) => active && setError(err?.message ?? "No se pudo cargar la receta"))
+      .finally(() => active && setIsLoading(false));
     return () => {
-      mounted = false;
+      active = false;
     };
   }, [recipeId]);
+
+  useFocusEffect(load);
 
   async function toggleFavorite() {
     try {
@@ -42,11 +49,29 @@ export function RecipeDetailScreen({ route }) {
         : await recipeService.addFavorite(recipeId);
       setRecipe(updated);
     } catch {
-      // notify() ya avisa por Alert en los flujos del core; aquí lo dejamos pasar.
+      // notify() ya avisa por Alert en los flujos del core.
     }
   }
 
-  if (isLoading) {
+  function handleDelete() {
+    Alert.alert("Eliminar receta", "¿Seguro que quieres eliminar esta receta?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await recipeService.remove(recipeId);
+            navigation.goBack();
+          } catch (err) {
+            Alert.alert("RecetarIA", err?.message ?? "No se pudo eliminar la receta");
+          }
+        },
+      },
+    ]);
+  }
+
+  if (isLoading && !recipe) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color="#16a34a" />
@@ -63,6 +88,7 @@ export function RecipeDetailScreen({ route }) {
   if (!recipe) return null;
 
   const imageUrl = recipe.image_path ? `${API_URL}${recipe.image_path}` : null;
+  const canEdit = user && (user.id === recipe.user_id || user.role === "admin");
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -87,6 +113,20 @@ export function RecipeDetailScreen({ route }) {
           {DIFFICULTY_LABELS[recipe.difficulty] ?? recipe.difficulty}
         </Text>
       </View>
+
+      {canEdit ? (
+        <View style={styles.actions}>
+          <Pressable
+            style={[styles.actionBtn, styles.editBtn]}
+            onPress={() => navigation.navigate("RecipeForm", { recipeId })}
+          >
+            <Text style={styles.editText}>Editar</Text>
+          </Pressable>
+          <Pressable style={[styles.actionBtn, styles.deleteBtn]} onPress={handleDelete}>
+            <Text style={styles.deleteText}>Eliminar</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       {recipe.description ? <Text style={styles.description}>{recipe.description}</Text> : null}
 
@@ -134,6 +174,12 @@ const styles = StyleSheet.create({
   tag: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, fontSize: 13, fontWeight: "700", overflow: "hidden" },
   tagTime: { backgroundColor: "#dcfce7", color: "#16a34a" },
   tagDiff: { backgroundColor: "#fef3c7", color: "#b45309" },
+  actions: { flexDirection: "row", gap: 10, marginTop: 16 },
+  actionBtn: { paddingVertical: 10, paddingHorizontal: 18, borderRadius: 12, borderWidth: 1 },
+  editBtn: { backgroundColor: "white", borderColor: "#e5ddcd" },
+  editText: { fontSize: 14, fontWeight: "700", color: "#4a4238" },
+  deleteBtn: { backgroundColor: "white", borderColor: "#fecaca" },
+  deleteText: { fontSize: 14, fontWeight: "700", color: "#dc2626" },
   description: { fontSize: 15, lineHeight: 22, color: "#4a4238", marginTop: 16 },
   sectionTitle: { fontSize: 19, fontWeight: "700", color: "#1a1a1a", marginTop: 24, marginBottom: 10 },
   ingredientsCard: {

@@ -13,6 +13,7 @@ import { RecipesScreen } from "./src/screens/RecipesScreen";
 import { RecipeDetailScreen } from "./src/screens/RecipeDetailScreen";
 import { ShoppingListScreen } from "./src/screens/ShoppingListScreen";
 import { PlannerScreen } from "./src/screens/PlannerScreen";
+import { RecipeFormScreen } from "./src/screens/RecipeFormScreen";
 
 // Configuración móvil del core: misma lógica que la web (main.jsx), inyectando
 // el storage seguro del iPhone. Se hace una vez, al cargar el módulo.
@@ -52,6 +53,7 @@ function RecipesStack() {
         component={RecipeDetailScreen}
         options={({ route }) => ({ title: route.params?.title ?? "Receta" })}
       />
+      <Stack.Screen name="RecipeForm" component={RecipeFormScreen} options={{ title: "Receta" }} />
     </Stack.Navigator>
   );
 }
