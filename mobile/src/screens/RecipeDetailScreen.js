@@ -10,12 +10,26 @@ import {
   View,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
 import { recipeService } from "@recetaria/core";
 
 import { useAuth } from "../auth/AuthContext";
 import { API_URL } from "../config";
 
 const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil" };
+
+// Construye el objeto de fichero que React Native adjunta al FormData (lo que
+// createApiClient.uploadFile espera): { uri, name, type }.
+function assetToFile(asset) {
+  const uri = asset.uri;
+  const name = asset.fileName || uri.split("/").pop() || `receta-${Date.now()}.jpg`;
+  let type = asset.mimeType;
+  if (!type) {
+    const ext = (name.split(".").pop() || "jpg").toLowerCase();
+    type = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+  }
+  return { uri, name, type };
+}
 
 // Detalle de una receta. Reusa recipeService.get de @recetaria/core. El recipeId
 // llega por los params de navegación. Recarga al enfocarse para reflejar las
@@ -25,6 +39,7 @@ export function RecipeDetailScreen({ route, navigation }) {
   const { user } = useAuth();
   const [recipe, setRecipe] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
 
   const load = useCallback(() => {
@@ -50,6 +65,29 @@ export function RecipeDetailScreen({ route, navigation }) {
       setRecipe(updated);
     } catch {
       // notify() ya avisa por Alert en los flujos del core.
+    }
+  }
+
+  async function changeImage() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert("Permiso necesario", "Permite el acceso a tus fotos para cambiar la imagen.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+
+    setIsUploading(true);
+    try {
+      const updated = await recipeService.uploadImage(recipeId, assetToFile(result.assets[0]));
+      setRecipe(updated);
+    } catch (err) {
+      Alert.alert("RecetarIA", err?.message ?? "No se pudo subir la imagen");
+    } finally {
+      setIsUploading(false);
     }
   }
 
@@ -103,6 +141,11 @@ export function RecipeDetailScreen({ route, navigation }) {
         <Pressable style={styles.favBtn} onPress={toggleFavorite} hitSlop={8}>
           <Text style={styles.favIcon}>{recipe.is_favorite ? "⭐" : "☆"}</Text>
         </Pressable>
+        {canEdit ? (
+          <Pressable style={styles.changeImgBtn} onPress={changeImage} disabled={isUploading}>
+            <Text style={styles.changeImgText}>{isUploading ? "Subiendo…" : "Cambiar imagen"}</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <Text style={styles.title}>{recipe.title}</Text>
@@ -169,6 +212,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   favIcon: { fontSize: 18 },
+  changeImgBtn: {
+    position: "absolute",
+    bottom: 12,
+    right: 12,
+    backgroundColor: "rgba(255,255,255,0.92)",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  changeImgText: { fontSize: 13, fontWeight: "700", color: "#1a1a1a" },
   title: { fontSize: 26, fontWeight: "800", color: "#1a1a1a", marginTop: 18, lineHeight: 30 },
   tagsRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   tag: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, fontSize: 13, fontWeight: "700", overflow: "hidden" },
