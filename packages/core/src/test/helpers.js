@@ -15,6 +15,11 @@ export function setupApi() {
   });
 }
 
+// Crea una respuesta tipo fetch con cuerpo JSON.
+export function jsonResponse(data, { ok = true, status = 200 } = {}) {
+  return Promise.resolve({ ok, status, json: async () => data });
+}
+
 // Simula global.fetch enrutando por "METODO url".
 // routes: { "GET http://test/api/v1/shopping": { data, ok?, status? }, ... }
 export function mockApi(routes) {
