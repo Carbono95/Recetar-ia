@@ -19,13 +19,16 @@ const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil"
 // Primera pantalla real portada al móvil. Consume el hook useRecipes de
 // @recetaria/core — el MISMO que usa la web — probando que compartir hooks
 // (no solo services) funciona en React Native en runtime.
-export function RecipesScreen({ user, onLogout }) {
+export function RecipesScreen({ navigation, user, onLogout }) {
   const { recipes, isLoading, error, toggleFavorite, refetch } = useRecipes();
 
   function renderItem({ item }) {
     const imageUrl = item.image_path ? `${API_URL}${item.image_path}` : null;
     return (
-      <View style={styles.card}>
+      <Pressable
+        style={styles.card}
+        onPress={() => navigation.navigate("RecipeDetail", { recipeId: item.id, title: item.title })}
+      >
         <View style={styles.thumbWrap}>
           {imageUrl ? (
             <Image source={{ uri: imageUrl }} style={styles.thumb} />
@@ -53,7 +56,7 @@ export function RecipesScreen({ user, onLogout }) {
             </Text>
           </View>
         </View>
-      </View>
+      </Pressable>
     );
   }
 

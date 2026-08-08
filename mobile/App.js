@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { Alert } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { configureApi, setNotifier, authService } from "@recetaria/core";
 
 import { secureStorage } from "./src/secureStorage";
 import { API_URL } from "./src/config";
 import { LoginScreen } from "./src/screens/LoginScreen";
 import { RecipesScreen } from "./src/screens/RecipesScreen";
+import { RecipeDetailScreen } from "./src/screens/RecipeDetailScreen";
 
 // Configuración móvil del core: misma lógica que la web (main.jsx), inyectando
 // el storage seguro del iPhone. Se hace una vez, al cargar el módulo.
@@ -17,6 +21,8 @@ configureApi({
   },
 });
 setNotifier((message) => Alert.alert("RecetarIA", message));
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -36,9 +42,30 @@ export default function App() {
     setUser(null);
   }
 
-  return user ? (
-    <RecipesScreen user={user} onLogout={logout} />
-  ) : (
-    <LoginScreen onLogin={login} />
+  return (
+    <SafeAreaProvider>
+      <NavigationContainer>
+        {user ? (
+          // Stack autenticado: lista de recetas → detalle.
+          <Stack.Navigator screenOptions={{ headerTintColor: "#16a34a", headerTitleStyle: { color: "#1a1a1a" } }}>
+            <Stack.Screen name="Recipes" options={{ headerShown: false }}>
+              {(props) => <RecipesScreen {...props} user={user} onLogout={logout} />}
+            </Stack.Screen>
+            <Stack.Screen
+              name="RecipeDetail"
+              component={RecipeDetailScreen}
+              options={({ route }) => ({ title: route.params?.title ?? "Receta" })}
+            />
+          </Stack.Navigator>
+        ) : (
+          // Sin sesión: solo el login.
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login">
+              {(props) => <LoginScreen {...props} onLogin={login} />}
+            </Stack.Screen>
+          </Stack.Navigator>
+        )}
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
