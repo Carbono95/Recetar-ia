@@ -5,11 +5,11 @@ import {
   Image,
   Pressable,
   RefreshControl,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRecipes } from "@recetaria/core";
 
 import { API_URL } from "../config";
@@ -61,7 +61,7 @@ export function RecipesScreen({ navigation, user, onLogout }) {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
       <StatusBar style="dark" />
       <View style={styles.header}>
         <View>
