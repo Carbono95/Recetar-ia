@@ -72,7 +72,9 @@ function RecipeDetailPage() {
   if (!recipe) return null;
 
   const imageUrl = recipe.image_path ? `${import.meta.env.VITE_API_URL}${recipe.image_path}` : null;
-  const canEdit = user && (user.id === recipe.user_id || user.role === "admin");
+  // Recetario compartido: cualquier usuario autenticado puede editar/eliminar/subir
+  // imagen en cualquier receta (el backend lo permite igual). Ver móvil RecipeDetailScreen.
+  const canEdit = Boolean(user);
 
   return (
     <div className="max-w-narrow mx-auto pb-10">
