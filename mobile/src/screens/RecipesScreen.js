@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRecipes } from "@recetaria/core";
 
+import { useAuth } from "../auth/AuthContext";
 import { API_URL } from "../config";
 
 const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil" };
@@ -19,7 +20,8 @@ const DIFFICULTY_LABELS = { facil: "Fácil", media: "Media", dificil: "Difícil"
 // Primera pantalla real portada al móvil. Consume el hook useRecipes de
 // @recetaria/core — el MISMO que usa la web — probando que compartir hooks
 // (no solo services) funciona en React Native en runtime.
-export function RecipesScreen({ navigation, user, onLogout }) {
+export function RecipesScreen({ navigation }) {
+  const { user, logout } = useAuth();
   const { recipes, isLoading, error, toggleFavorite, refetch } = useRecipes();
 
   function renderItem({ item }) {
@@ -68,7 +70,7 @@ export function RecipesScreen({ navigation, user, onLogout }) {
           <Text style={styles.hello}>Hola, {user.username}</Text>
           <Text style={styles.headerSub}>Tus recetas</Text>
         </View>
-        <Pressable onPress={onLogout} hitSlop={8}>
+        <Pressable onPress={logout} hitSlop={8}>
           <Text style={styles.logout}>Salir</Text>
         </Pressable>
       </View>

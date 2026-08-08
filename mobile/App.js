@@ -1,15 +1,17 @@
-import { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { configureApi, setNotifier, authService } from "@recetaria/core";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { configureApi, setNotifier } from "@recetaria/core";
 
 import { secureStorage } from "./src/secureStorage";
 import { API_URL } from "./src/config";
+import { AuthProvider, useAuth } from "./src/auth/AuthContext";
 import { LoginScreen } from "./src/screens/LoginScreen";
 import { RecipesScreen } from "./src/screens/RecipesScreen";
 import { RecipeDetailScreen } from "./src/screens/RecipeDetailScreen";
+import { ShoppingListScreen } from "./src/screens/ShoppingListScreen";
 
 // Configuración móvil del core: misma lógica que la web (main.jsx), inyectando
 // el storage seguro del iPhone. Se hace una vez, al cargar el módulo.
@@ -23,49 +25,70 @@ configureApi({
 setNotifier((message) => Alert.alert("RecetarIA", message));
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function TabIcon({ emoji, focused }) {
+  return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>;
+}
+
+// Pestaña de recetas: su propio stack lista → detalle.
+function RecipesStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerTintColor: "#16a34a", headerTitleStyle: { color: "#1a1a1a" } }}>
+      <Stack.Screen name="Recipes" component={RecipesScreen} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="RecipeDetail"
+        component={RecipeDetailScreen}
+        options={({ route }) => ({ title: route.params?.title ?? "Receta" })}
+      />
+    </Stack.Navigator>
+  );
+}
+
+// Área autenticada: tab bar Recetas / Lista de compra.
+function AuthedTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: "#16a34a",
+        tabBarInactiveTintColor: "#9ca3af",
+      }}
+    >
+      <Tab.Screen
+        name="RecetasTab"
+        component={RecipesStack}
+        options={{ title: "Recetas", tabBarIcon: ({ focused }) => <TabIcon emoji="🍳" focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="ListaTab"
+        component={ShoppingListScreen}
+        options={{ title: "Lista", tabBarIcon: ({ focused }) => <TabIcon emoji="🛒" focused={focused} /> }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+// Con sesión → tabs; sin sesión → login.
+function RootNavigator() {
+  const { user } = useAuth();
+  return user ? (
+    <AuthedTabs />
+  ) : (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+    </Stack.Navigator>
+  );
+}
 
 export default function App() {
-  const [user, setUser] = useState(null);
-
-  async function login(username, password) {
-    const tokens = await authService.login(username, password);
-    await secureStorage.setItem("access_token", tokens.access_token);
-    await secureStorage.setItem("refresh_token", tokens.refresh_token);
-    // Llamada autenticada: prueba que el token guardado viaja en la cabecera.
-    const profile = await authService.me();
-    setUser(profile);
-  }
-
-  async function logout() {
-    await secureStorage.removeItem("access_token");
-    await secureStorage.removeItem("refresh_token");
-    setUser(null);
-  }
-
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        {user ? (
-          // Stack autenticado: lista de recetas → detalle.
-          <Stack.Navigator screenOptions={{ headerTintColor: "#16a34a", headerTitleStyle: { color: "#1a1a1a" } }}>
-            <Stack.Screen name="Recipes" options={{ headerShown: false }}>
-              {(props) => <RecipesScreen {...props} user={user} onLogout={logout} />}
-            </Stack.Screen>
-            <Stack.Screen
-              name="RecipeDetail"
-              component={RecipeDetailScreen}
-              options={({ route }) => ({ title: route.params?.title ?? "Receta" })}
-            />
-          </Stack.Navigator>
-        ) : (
-          // Sin sesión: solo el login.
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Login">
-              {(props) => <LoginScreen {...props} onLogin={login} />}
-            </Stack.Screen>
-          </Stack.Navigator>
-        )}
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <AuthProvider>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <RootNavigator />
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </AuthProvider>
   );
 }

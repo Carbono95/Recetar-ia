@@ -2,10 +2,12 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
-// Pantalla de login (presentacional). La lógica de autenticación vive en App.js;
-// aquí solo se recoge usuario/contraseña y se delega en onLogin, que lanza si
-// las credenciales fallan.
-export function LoginScreen({ onLogin }) {
+import { useAuth } from "../auth/AuthContext";
+
+// Pantalla de login. Recoge usuario/contraseña y delega en login() del
+// AuthContext, que autentica contra el core y guarda los tokens.
+export function LoginScreen() {
+  const { login } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("idle");
@@ -15,8 +17,8 @@ export function LoginScreen({ onLogin }) {
     setStatus("loading");
     setError(null);
     try {
-      await onLogin(username, password);
-      // Si el login va bien, App.js cambia de pantalla y este componente se desmonta.
+      await login(username, password);
+      // Si el login va bien, el RootNavigator cambia de pantalla y este se desmonta.
     } catch (err) {
       setError(err?.message ?? "No se pudo iniciar sesión");
       setStatus("error");
