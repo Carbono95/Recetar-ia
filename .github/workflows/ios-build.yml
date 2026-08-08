@@ -32,7 +32,10 @@ on:
         description: 'Build configuration (Debug is faster, Release for production)'
         required: false
         type: string
-        default: 'Debug'
+        # Release para que el bundle JS quede EMBEBIDO en el .ipa. Con Debug, una
+        # app Expo/RN espera un Metro/packager y al abrirla sin dev server falla
+        # con "No script URL provided". Para instalar de verdad hace falta Release.
+        default: 'Release'
       flutter_version:
         description: 'Flutter version to use (e.g., 3.24.0). Empty means latest stable.'
         required: false
