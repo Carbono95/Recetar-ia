@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.core.config import settings
-from app.core.database import Base
+from app.core.database import Base, normalize_database_url
 
 # Importa aquí los modelos para que Alembic los autodetecte
 from app.models import (  # noqa: F401
@@ -19,7 +19,12 @@ from app.models import (  # noqa: F401
 )
 
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.database_url)
+
+# Mismo rewrite de driver que usa la app (postgres:// → postgresql+psycopg://); sin él
+# las migraciones fallan en Render, que entrega la DATABASE_URL en el formato antiguo.
+# El "%" se escapa porque alembic.ini pasa por configparser y una contraseña con "%"
+# se interpretaría como interpolación.
+config.set_main_option("sqlalchemy.url", normalize_database_url(settings.database_url).replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)

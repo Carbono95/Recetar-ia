@@ -6,7 +6,7 @@ from app.core.config import settings
 IS_SQLITE = settings.database_url.startswith("sqlite")
 
 
-def _normalize_database_url(url: str) -> str:
+def normalize_database_url(url: str) -> str:
     """SQLAlchemy resuelve "postgres://"/"postgresql://" al driver psycopg2 por
     defecto, pero el proyecto instala psycopg (v3). Sin este rewrite, una
     DATABASE_URL de Render (que llega como "postgres://...") rompe la conexión
@@ -21,7 +21,7 @@ def _normalize_database_url(url: str) -> str:
 # SQLite necesita este flag porque por defecto solo permite un thread por conexión
 connect_args = {"check_same_thread": False} if IS_SQLITE else {}
 
-engine = create_engine(_normalize_database_url(settings.database_url), connect_args=connect_args)
+engine = create_engine(normalize_database_url(settings.database_url), connect_args=connect_args)
 
 if IS_SQLITE:
     # SQLite ignora "ON DELETE CASCADE" salvo que se active esta pragma por conexión;
