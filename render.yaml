@@ -1,6 +1,7 @@
 databases:
   - name: recetaria-db
     plan: free
+    region: frankfurt
     databaseName: recetaria
     user: recetaria
 
@@ -11,6 +12,7 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     plan: free
+    region: frankfurt
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
